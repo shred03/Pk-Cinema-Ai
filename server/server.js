@@ -6,6 +6,7 @@ const File = require('./models/File');
 const Admin = require('./models/Admin');
 const descriptions = require('./script')
 const express = require('express');
+const Logger = require('./logs/Logs');
 const app = express();
 
 
@@ -16,6 +17,7 @@ mongoose.connect(process.env.MONGODB_URI)
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_IDS = process.env.ADMIN_IDS.split(',').map(id => parseInt(id));
 const TARGET_CHANNEL = process.env.TARGET_CHANNEL;
+const logger = new Logger(bot, process.env.LOG_CHANNEL_ID);
 
 const mainKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🏠 Home', 'home')],
@@ -121,6 +123,14 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
     try {
         const args = ctx.message.text.split(' ').slice(1);
         if (args.length === 0) {
+            await logger.command(
+                ctx.from.id,
+                ctx.message.text,
+                ctx.from.username || 'Unknow',
+                'Link command used',
+                'FAILED',
+                'No Link Provided'
+            );
             return ctx.reply(
                 'Please provide the message link in the following format:\n' +
                 '/link https://t.me/c/xxxxx/123'
@@ -142,11 +152,32 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
 
         if (stored) {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
+            await logger.command(
+                ctx.from.id,
+                ctx.from.username || 'Unknow',
+                'Link command used',
+                'SUCCESS',
+                `File stored with ID: ${uniqueId}`
+            );
             await ctx.reply(`✅ File stored successfully!\n🔗 Retrieval link: ${retrievalLink}`);
         } else {
+            await logger.command(
+                ctx.from.id,
+                ctx.from.username || 'Unknown',
+                'link',
+                'FAILED',
+                'No supported file found'
+            );
             await ctx.reply('No supported file found in the message.');
         }
     } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            ctx.from.username || 'Unknown',
+            'Link command used',
+            'FAILED',
+            error.message
+        )
         console.error('Error storing file from link:', error);
         await ctx.reply('Error storing file. Please check if the link is from the target channel.');
     }
@@ -157,6 +188,13 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
     try {
         const args = ctx.message.text.split(' ').slice(1);
         if (args.length !== 2) {
+            await logger.command(
+                ctx.from.id,
+                ctx.from.username || 'Unknown',
+                'Batch command used',
+                'FAILED',
+                'No Link Provided'
+            );
             return ctx.reply(
                 'Please provide the start and end message links in the following format:\n' +
                 '/batch https://t.me/c/xxxxx/123 https://t.me/c/xxxxx/128'
@@ -209,6 +247,13 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
 
         if (storedCount > 0) {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
+            await logger.command(
+                ctx.from.id,
+                ctx.from.username || 'Unknown',
+                'Batch command used',
+                'SUCCESS',
+                `Stored ${storedCount} files with ID: ${uniqueId}`
+            );
             await ctx.reply(
                 `Successfully stored ${storedCount} files!\n` +
                 `Retrieval link: ${retrievalLink}`
@@ -217,6 +262,13 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             await ctx.reply('No supported files found in the specified range.');
         }
     } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            ctx.from.username || 'Unknown',
+            'Batch command used',
+            'FAILED',
+            error.message
+        );
         console.error('Error storing files from range:', error);
         await ctx.reply('Error storing files. Please check if the links are from the target channel.');
     }
@@ -291,8 +343,15 @@ bot.command('start', async (ctx) => {
             if (!files.length) {
                 return ctx.reply('Files not found.');
             }
-
+            await logger.command(
+                ctx.from.id,
+                ctx.from.username || 'Unknown',
+                'File retrieval command used',
+                'SUCCESS',
+                `Retrieved ${files.length} files with ID: ${uniqueId}`
+            )
             await ctx.reply(`⌛️ Sending ${files.length} file(s)...`);
+
 
             // Get admin's custom caption if the file was stored by an admin
             const adminId = files[0].stored_by;
@@ -306,7 +365,7 @@ bot.command('start', async (ctx) => {
 
             for (const file of files) {
                 try {
-                    const caption = customCaption || `File: ${file.file_name}`;
+                    const caption = customCaption;
                     switch (file.file_type) {
                         case 'document':
                             await ctx.telegram.sendDocument(ctx.chat.id, file.file_id, { caption });
@@ -331,6 +390,13 @@ bot.command('start', async (ctx) => {
 
             await ctx.reply('✅ All files sent!');
         } catch (error) {
+            await logger.error(
+                ctx.from.id,
+                ctx.from.username || 'Unknown',
+                'File retrieval command used',
+                'FAILED',
+                error.message
+            );
             console.error('Error retrieving files:', error);
             await ctx.reply('Error retrieving files. Please try again.');
         }
@@ -338,12 +404,20 @@ bot.command('start', async (ctx) => {
         // Welcome message with image and buttons
         try {
             await ctx.replyWithPhoto(
+
                 descriptions.welcome_image,
                 {
                     caption: descriptions.welcome_text,
                     parse_mode: 'Markdown',
                     ...mainKeyboard
-                }
+                },
+                await logger.command(
+                    ctx.from.id,
+                    ctx.from.username || 'Unknown',
+                    '/start command used',
+                    'SUCCESS',
+                    'Welcome message sent'
+                )
             );
         } catch (error) {
             console.error('Error sending welcome message:', error);
@@ -403,7 +477,6 @@ app.listen(PORT, () => {
 const startBot = async () => {
     try {
         await bot.launch();
-        
         console.log('✅ Bot is running...');
     } catch (error) {
         console.error('❌ Error starting bot:', error);

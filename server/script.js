@@ -33,7 +33,7 @@ Created by: [Mithun](https://t.me/mithun_naam_toh_suna_hoga)
 
 Admin Commands:
 • /link or /sl - Store file from message link
-• /range or /ml - Store files from message range
+• /batch or /ml - Store files from message range
 • /setcaption or /sc - Set custom caption
 • /removecaption or /rc - Remove custom caption
 • /showcaption or /shc - Show current caption
