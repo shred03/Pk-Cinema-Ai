@@ -159,7 +159,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
         if (args.length !== 2) {
             return ctx.reply(
                 'Please provide the start and end message links in the following format:\n' +
-                '/range https://t.me/c/xxxxx/123 https://t.me/c/xxxxx/128'
+                '/batch https://t.me/c/xxxxx/123 https://t.me/c/xxxxx/128'
             );
         }
 
