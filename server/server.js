@@ -5,6 +5,8 @@ require('dotenv').config();
 const File = require('./models/File');
 const Admin = require('./models/Admin');
 const descriptions = require('./script')
+const express = require('express');
+const app = express();
 
 
 mongoose.connect(process.env.MONGODB_URI)
@@ -394,10 +396,14 @@ bot.action('help', async (ctx) => {
     }
 });
 
-// Start bot
+const PORT = process.env.PORT || 8000
+app.listen(PORT, () => {
+    console.log(`Health check server is running on port ${PORT}`);
+});
 const startBot = async () => {
     try {
         await bot.launch();
+        
         console.log('✅ Bot is running...');
     } catch (error) {
         console.error('❌ Error starting bot:', error);
