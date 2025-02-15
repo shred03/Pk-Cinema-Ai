@@ -21,7 +21,7 @@ const TARGET_CHANNEL = process.env.TARGET_CHANNEL;
 const FORCE_CHANNEL_ID = process.env.FORCE_CHANNEL_ID;
 const FORCE_CHANNEL_USERNAME = process.env.FORCE_CHANNEL_USERNAME ||'pirecykings2';
 const AUTO_DELETE = process.env.AUTO_DELETE_FILES === 'true';
-const DELETE_MINUTES = parseInt(process.env.AUTO_DELETE_TIME) || 1;
+const DELETE_MINUTES = parseInt(process.env.AUTO_DELETE_TIME) || 30;
 const logger = new Logger(bot, process.env.LOG_CHANNEL_ID);
 setupBroadcast(bot, logger);
 
