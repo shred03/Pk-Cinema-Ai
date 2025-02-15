@@ -1,45 +1,46 @@
 const descriptions = {
-    welcome_image: "https://images5.alphacoders.com/484/484908.jpg",
-    welcome_text: `🎉 Welcome to File Store Bot!
-    
-Store and manage files from your channels with ease. Get started by clicking one of the buttons below.`,
+    welcome_image: "https://jpcdn.it/img/2f8c858a7d36bbf69575cd54223f0bd1.jpg",
+    welcome_text: `Welcome to [PK 👑] Cinema Bot!`,
 
     // Home section content
-    home: `🏠 *Welcome to Pirecy King File Store Bot*
+    home: `🏠 *Welcome to [PK 👑] Cinema Bot! Bot*
 
-• Store files from channels
-• Custom file captions`,
+    `,
 
-    // About section content
+
     about: `
 
-ʟᴀɴɢᴜᴀɢᴇ: [Node.js](https://nodejs.org) and [MongoDB](https://mongodb.com)
+🤖* ɴᴀᴍᴇ:* ᴘᴋ-ᴄɪɴᴇᴍᴀ ʙᴏᴛ
 
-ғᴇᴀᴛᴜʀᴇs:
-• sᴛᴏʀᴇ sɪɴɢʟᴇ/ᴍᴜʟᴛɪᴘʟᴇ ғɪʟᴇs 
-• sᴜᴘᴘᴏʀᴛ ғᴏʀ ᴅᴏᴄᴜᴍᴇɴᴛs, ᴘʜᴏᴛᴏs, ᴠɪᴅᴇᴏs, ɢɪғs, sᴛɪᴄᴋᴇʀs 
-• ᴄᴜsᴛᴏᴍ ғɪʟᴇ ᴄᴀᴘᴛɪᴏɴs 
-• ᴜɴɪǫᴜᴇ ғɪʟᴇ sʜᴀʀɪɴɢ ʟɪɴᴋs 
-• ʀᴀɴɢᴇ-ʙᴀsᴇᴅ ғɪʟᴇ sᴛᴏʀᴀɢᴇ 
-• ᴀᴅᴍɪɴ-ᴏɴʟʏ ᴀᴄᴄᴇss ᴄᴏɴᴛʀᴏʟ `,
+📝* ʟᴀɴɢᴜᴀɢᴇ:* [ɴᴏᴅᴇ.ᴊs](https://nodejs.org) & [ᴍᴏɴɢᴏᴅʙ](https://mongodb.com)
 
-    // Creator section content
-    creator: `
+🧑‍💻* ᴅᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ:* [ᴇsᴘᴀᴅᴀ ɴᴏ.𝟷](https://t.me/HelpSupportEspadaBot)
 
-Created by: [Mithun](https://t.me/mithun_naam_toh_suna_hoga)
 `,
 
-    help: `🔍 *Available Commands*
+    // Support section content
+    support: `
 
-Admin Commands:
+*ᴊᴏɪɴ ᴛʜᴇ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ʀᴇᴛʀɪᴠᴇ ʏᴏᴜʀ ғɪʟᴇ.*
+    
+*ᴍᴏᴠɪᴇs & sᴇʀɪᴇs:* [ᴘɪʀᴇᴄʏ ᴋɪɴɢs](https://t.me/pirecykings2)
+`,
+
+    commands: `🔍 *Available Commands*
+
+🧛 Admin Commands:
 • /link or /sl - Store file from message link
 • /batch or /ml - Store files from message range
 • /setcaption or /sc - Set custom caption
 • /removecaption or /rc - Remove custom caption
 • /showcaption or /shc - Show current caption
+• /broadcast - Broadcast Message
 
-User Commands:
-• /start - Start the bot`
+👤 User Commands:
+• /start - Start the bot
+
+*𝘕𝘰𝘵𝘦: 𝘈𝘭𝘭 𝘤𝘰𝘮𝘮𝘢𝘯𝘥𝘴 𝘢𝘳𝘦 𝘸𝘰𝘳𝘬𝘪𝘯𝘨* ✅
+`
 };
 
 module.exports = descriptions;
