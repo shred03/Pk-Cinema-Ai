@@ -19,7 +19,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_IDS = process.env.ADMIN_IDS.split(',').map(id => parseInt(id));
 const TARGET_CHANNEL = process.env.TARGET_CHANNEL;
 const FORCE_CHANNEL_ID = process.env.FORCE_CHANNEL_ID;
-const FORCE_CHANNEL_USERNAME = process.env.FORCE_CHANNEL_USERNAME
+// const FORCE_CHANNEL_USERNAME = process.env.FORCE_CHANNEL_USERNAME ||'PirecyKings2';
 const AUTO_DELETE = process.env.AUTO_DELETE_FILES === 'true';
 const DELETE_MINUTES = parseInt(process.env.AUTO_DELETE_TIME) || 1;
 const logger = new Logger(bot, process.env.LOG_CHANNEL_ID);
@@ -281,7 +281,7 @@ bot.command('start', async (ctx) => {
                     const member = await ctx.telegram.getChatMember(FORCE_CHANNEL_ID, ctx.from.id)
                     if(member.status == 'left' || member.status == 'kicked'){
                         const joinKeyboard = Markup.inlineKeyboard([
-                            Markup.button.url('Join Channel', `https://t.me/${FORCE_CHANNEL_USERNAME}`),
+                            Markup.button.url('Join Channel', `https://t.me/PirecyKings2`),
                             Markup.button.callback('✅ I\'ve Joined', `check_join_${uniqueId}` )
                         ]);
                         await ctx.reply('⚠️ To access the files, please join our channel first.', joinKeyboard);
