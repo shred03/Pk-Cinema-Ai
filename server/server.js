@@ -319,13 +319,7 @@ bot.command('start', async (ctx) => {
             // Send all files once
             for (const file of files) {
                 try {
-                    let caption = '';
-                    if (admin && admin.caption_enabled) {
-                        caption = admin.custom_caption;
-                    } else {
-                        caption = file.original_caption || '';
-                    }
-    
+                    const caption = file.originalCaption || '';    
                     let sentMessage;
                     switch (file.file_type) {
                         case 'document':
@@ -399,108 +393,6 @@ bot.command('start', async (ctx) => {
         } catch (error) {
             await ctx.reply('Error starting bot. Please try again.');
         }
-    }
-});
-
-bot.command(['setcaption', 'sc'], isAdmin, async (ctx) => {
-    try {
-        const caption = ctx.message.text.split(' ').slice(1).join(' ');
-        if (!caption) {
-
-            return ctx.reply(
-                'Please provide the caption in the following format:\n' +
-                '/setcaption or /sc: Your custom caption here'
-            );
-        }
-
-        await Admin.findOneAndUpdate(
-            { admin_id: ctx.from.id },
-            { 
-                admin_id: ctx.from.id,
-                custom_caption: caption,
-                caption_enabled: true
-            },
-            { upsert: true }
-        );
-        await logger.command(
-            ctx.from.id,
-            ctx.from.username || 'Unknown',
-            'setcaption command used',
-            'SUCCESS',
-            `Custom caption set to: ${caption}`
-        )
-
-        await ctx.reply('Custom caption set successfully!');
-    } catch (error) {
-        await logger.error(
-            ctx.from.id,
-            ctx.from.username || 'Unknown',
-            'setcaption command used',
-            'FAILED',
-            error.message
-        );
-        console.error('Error setting caption:', error);
-        await ctx.reply('Error setting caption. Please try again.');
-    }
-});
-
-// Command to remove custom caption
-bot.command(['removecaption', 'rc'], isAdmin, async (ctx) => {
-    try {
-        await Admin.findOneAndUpdate(
-            { admin_id: ctx.from.id },
-            { caption_enabled: false }
-        );
-        await logger.command(
-            ctx.from.id,
-            ctx.from.username || 'Unknown',
-            'removecaption command used',
-            'SUCCESS',
-            `Custom caption was disabled`
-        )
-        await ctx.reply('Custom caption disabled successfully!');
-    } catch (error) {
-        await logger.error(
-            ctx.from.id,
-            ctx.from.username || 'Unknown',
-            'removecaption command used',
-            'FAILED',
-            error.message
-        );
-        console.error('Error removing caption:', error);
-        await ctx.reply('Error removing caption. Please try again.');
-    }
-});
-
-// Command to show current caption
-bot.command(['showcaption', 'shc'], isAdmin, async (ctx) => {
-    try {
-        const admin = await Admin.findOne({ admin_id: ctx.from.id });
-        if (!admin || !admin.custom_caption) {
-            return ctx.reply('No custom caption set.');
-        }
-
-        await logger.command(
-            ctx.from.id,
-            ctx.from.username || 'Unknown',
-            'showcaption command used',
-            'SUCCESS',
-            `Custom caption was viewed`
-        )
-        await ctx.reply(
-            `Current caption ${admin.caption_enabled ? 'enabled' : 'disabled'}:\n\n` +
-            admin.custom_caption
-        );
-    } catch (error) {
-        await logger.error(
-            ctx.from.id,
-            ctx.from.username || 'Unknown',
-            'showcaption command used',
-            'FAILED',
-            error.message
-        );
-        console.error('Error showing caption:', error);
-        await ctx.reply('Error showing caption. Please try again.');
     }
 });
 
