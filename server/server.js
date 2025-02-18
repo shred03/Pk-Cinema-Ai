@@ -138,7 +138,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
             await logger.command(
                 ctx.from.id,
                 ctx.message.text,
-                ctx.from.username || 'Unknown',
+                ctx.from.first_name || 'Unknown',
                 'Link command used',
                 'FAILED',
                 'No Link Provided'
@@ -159,7 +159,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                ctx.from.first_name || 'Unknown',
                 'Link command used',
                 'SUCCESS',
                 `File stored with ID: ${retrievalLink}`
@@ -171,7 +171,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
     } catch (error) {
         await logger.error(
             ctx.from.id,
-            ctx.from.username || 'Unknown',
+            ctx.from.first_name || 'Unknown',
             'Link command used',
             'FAILED',
             error.message
@@ -188,7 +188,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
         if (args.length !== 2) {
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                ctx.from.first_name || 'Unknown',
                 'Batch command used',
                 'FAILED',
                 'No Link Provided'
@@ -231,7 +231,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                ctx.from.first_name || 'Unknown',
                 'Batch command used',
                 'SUCCESS',
                 `Stored ${storedCount} files with URL: ${retrievalLink}`
@@ -243,7 +243,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
     } catch (error) {
         await logger.error(
             ctx.from.id,
-            ctx.from.username || 'Unknown',
+            ctx.from.first_name || 'Unknown',
             'Batch command used',
             'FAILED',
             error.message
@@ -301,7 +301,7 @@ bot.command('start', async (ctx) => {
     
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                ctx.from.first_name || 'Unknown',
                 'File retrieval command used',
                 'SUCCESS',
                 `Retrieved ${files.length} files with URL: https://t.me/${ctx.botInfo.username}?start=${uniqueId}`
@@ -367,7 +367,7 @@ bot.command('start', async (ctx) => {
         } catch (error) {
             await logger.error(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                ctx.from.first_name || 'Unknown',
                 'Start command used',
                 'FAILED',
                 error.message
@@ -379,7 +379,7 @@ bot.command('start', async (ctx) => {
         try {
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                ctx.from.first_name || 'Unknown',
                 'start command used',
                 'SUCCESS',
                 `Welcome message sent!`
