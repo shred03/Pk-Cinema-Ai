@@ -19,9 +19,9 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const ADMIN_IDS = process.env.ADMIN_IDS.split(',').map(id => parseInt(id));
 const TARGET_CHANNEL = process.env.TARGET_CHANNEL;
 const FORCE_CHANNEL_ID = process.env.FORCE_CHANNEL_ID;
-const FORCE_CHANNEL_USERNAME = process.env.FORCE_CHANNEL_USERNAME
+const FORCE_CHANNEL_USERNAME = process.env.FORCE_CHANNEL_USERNAME ||'pirecykings2';
 const AUTO_DELETE = process.env.AUTO_DELETE_FILES === 'true';
-const DELETE_MINUTES = parseInt(process.env.AUTO_DELETE_TIME) || 1;
+const DELETE_MINUTES = parseInt(process.env.AUTO_DELETE_TIME) || 30;
 const logger = new Logger(bot, process.env.LOG_CHANNEL_ID);
 setupBroadcast(bot, logger);
 
@@ -284,7 +284,6 @@ bot.command('start', async (ctx) => {
                             Markup.button.url('Join Channel', `https://t.me/${FORCE_CHANNEL_USERNAME}`),
                             Markup.button.callback('✅ I\'ve Joined', `check_join_${uniqueId}` )
                         ]);
-                        
                         await ctx.reply('⚠️ To access the files, please join our channel first.', joinKeyboard);
                         return;
                     }
@@ -320,7 +319,7 @@ bot.command('start', async (ctx) => {
             // Send all files once
             for (const file of files) {
                 try {
-                    const caption = file.original_caption || '';
+                    const caption = file.original_caption || '';    
                     let sentMessage;
                     switch (file.file_type) {
                         case 'document':
@@ -387,7 +386,7 @@ bot.command('start', async (ctx) => {
             )
 
             await ctx.replyWithPhoto(descriptions.welcome_image, {
-                caption: `Hello ${ctx.from.first_name}\n\n`+descriptions.welcome_text,
+                caption: descriptions.welcome_text,
                 parse_mode: 'Markdown',
                 ...mainKeyboard
             });
@@ -415,7 +414,7 @@ bot.action(/^check_join_(.+)/, async (ctx) => {
 
 bot.action('home', async (ctx) => {
     try {
-        await ctx.editMessageCaption(`Hello ${ctx.from.first_name}\n\n`+descriptions.home, {
+        await ctx.editMessageCaption(descriptions.home, {
             parse_mode: 'Markdown',
             ...mainKeyboard
         });
