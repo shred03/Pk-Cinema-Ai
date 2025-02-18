@@ -11,7 +11,13 @@ const express = require('express');
 const Logger = require('./logs/Logs');
 const app = express();
 
-mongoose.connect(process.env.MONGODB_URI)
+const DATABASE_NAME = process.env.DATABASE_NAME
+
+mongoose.connect(process.env.MONGODB_URI,{
+    dbName: DATABASE_NAME,
+    retryWrites: true,
+    w: 'majority'
+})
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
