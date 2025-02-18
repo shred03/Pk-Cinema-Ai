@@ -319,7 +319,7 @@ bot.command('start', async (ctx) => {
             // Send all files once
             for (const file of files) {
                 try {
-                    const caption = file.originalCaption || '';    
+                    const caption = file.original_caption || '';    
                     let sentMessage;
                     switch (file.file_type) {
                         case 'document':
