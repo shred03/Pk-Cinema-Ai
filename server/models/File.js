@@ -9,7 +9,9 @@ const FileSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now },
     is_multiple: { type: Boolean, default: false },
     unique_id: String,
-    message_id: Number
+    message_id: Number,
+    stored_by: { type: Number, required: true },
+    original_caption: { type: String, default: '' }
 });
 
 const File = mongoose.model('File', FileSchema);
