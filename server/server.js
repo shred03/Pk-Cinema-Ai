@@ -247,7 +247,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Batch command used',
                 'SUCCESS',
                 `Stored ${files.length} files\n URL: ${retrievalLink}`

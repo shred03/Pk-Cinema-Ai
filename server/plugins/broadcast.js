@@ -71,7 +71,7 @@ module.exports = (bot, logger) => {
             // Log the broadcast
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'broadcast',
                 'SUCCESS',
                 `Sent to ${successCount} users`
@@ -82,7 +82,7 @@ module.exports = (bot, logger) => {
             await ctx.reply('❌ Error during broadcast');
             await logger.error(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'broadcast',
                 'FAILED',
                 error.message
