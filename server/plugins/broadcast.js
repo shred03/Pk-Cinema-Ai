@@ -2,7 +2,6 @@ const { Telegraf } = require('telegraf');
 const User = require('../models/User');
 const Logger = require('../logs/Logs');
 
-
 module.exports = (bot, logger) => {
     bot.command('broadcast', async (ctx) => {
         // Check if user is admin
@@ -28,10 +27,19 @@ module.exports = (bot, logger) => {
             // Send message to all users
             for (const user of users) {
                 try {
+                    // Copy message with reply_markup if it exists
+                    const options = {};
+                    
+                    // Check if the message has inline keyboard buttons
+                    if (message.reply_markup) {
+                        options.reply_markup = message.reply_markup;
+                    }
+
                     await bot.telegram.copyMessage(
                         user.user_id,
                         ctx.chat.id,
-                        message.message_id
+                        message.message_id,
+                        options
                     );
                     successCount++;
                 } catch (error) {
@@ -63,7 +71,7 @@ module.exports = (bot, logger) => {
             // Log the broadcast
             await logger.command(
                 ctx.from.id,
-                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+                ctx.from.username || 'Unknown',
                 'broadcast',
                 'SUCCESS',
                 `Sent to ${successCount} users`
@@ -74,7 +82,7 @@ module.exports = (bot, logger) => {
             await ctx.reply('❌ Error during broadcast');
             await logger.error(
                 ctx.from.id,
-                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+                ctx.from.username || 'Unknown',
                 'broadcast',
                 'FAILED',
                 error.message
