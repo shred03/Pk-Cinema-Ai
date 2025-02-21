@@ -74,59 +74,92 @@ const getMessageFromChannel = async (ctx, messageId) => {
     }
 };
 
-// Updated store function with caption handling
-const storeFileFromMessage = async (message, uniqueId, adminId) => {
+const getFileDataFromMessage = (message) => {
     const originalCaption = message.caption || '';
-    const fileTypes = {
-        document: {
-            name: message.document?.file_name,
-            id: message.document?.file_id,
-            type: 'document'
-        },
-        photo: {
-            name: 'photo.jpg',
-            id: message.photo?.[message.photo.length - 1]?.file_id,
-            type: 'photo'
-        },
-        video: {
-            name: message.video?.file_name || 'video.mp4',
-            id: message.video?.file_id,
-            type: 'video'
-        },
-        animation: {
-            name: 'animation.gif',
-            id: message.animation?.file_id,
-            type: 'animation'
-        },
-        sticker: {
-            name: 'sticker.webp',
-            id: message.sticker?.file_id,
-            type: 'sticker'
-        }
-    };
+    
+    if (message.document) {
+        return {
+            file_name: message.document.file_name,
+            file_id: message.document.file_id,
+            file_type: 'document',
+            original_caption: originalCaption
+        };
+    } else if (message.photo) {
+        return {
+            file_name: 'photo.jpg',
+            file_id: message.photo[message.photo.length - 1].file_id,
+            file_type: 'photo',
+            original_caption: originalCaption
+        };
+    } else if (message.video) {
+        return {
+            file_name: message.video.file_name || 'video.mp4',
+            file_id: message.video.file_id,
+            file_type: 'video',
+            original_caption: originalCaption
+        };
+    } else if (message.animation) {
+        return {
+            file_name: 'animation.gif',
+            file_id: message.animation.file_id,
+            file_type: 'animation',
+            original_caption: originalCaption
+        };
+    } else if (message.sticker) {
+        return {
+            file_name: 'sticker.webp',
+            file_id: message.sticker.file_id,
+            file_type: 'sticker',
+            original_caption: originalCaption
+        };
+    }
+    return null;
+};
 
-    for (const [key, value] of Object.entries(fileTypes)) {
-        if (message[key] && value.id) {
-            const newFile = new File({
-                file_name: value.name,
-                file_id: value.id,
-                file_type: value.type,
-                original_caption: originalCaption,
-                stored_by: adminId,
-                file_link: message.link || '',
-                channel_id: TARGET_CHANNEL,
-                is_multiple: true,
-                unique_id: uniqueId,
-                message_id: message.message_id
-            });
-            await newFile.save();
-            return true;
-        }
+const sendFile = async (ctx, file) => {
+    const caption = file.original_caption || '';
+    switch (file.file_type) {
+        case 'document':
+            return await ctx.telegram.sendDocument(ctx.chat.id, file.file_id, { caption });
+        case 'photo':
+            return await ctx.telegram.sendPhoto(ctx.chat.id, file.file_id, { caption });
+        case 'video':
+            return await ctx.telegram.sendVideo(ctx.chat.id, file.file_id, { caption });
+        case 'animation':
+            return await ctx.telegram.sendAnimation(ctx.chat.id, file.file_id, { caption });
+        case 'sticker':
+            return await ctx.telegram.sendSticker(ctx.chat.id, file.file_id);
+    }
+};
+
+const storeFileFromMessage = async (message, uniqueId, adminId) => {
+    const fileData = getFileDataFromMessage(message);
+    if (fileData) {
+        const newFile = new File({
+            ...fileData,
+            stored_by: adminId,
+            file_link: message.link || 'NA',
+            channel_id: TARGET_CHANNEL,
+            is_multiple: true,
+            unique_id: uniqueId,
+            message_id: message.message_id
+        });
+        await newFile.save();
+        return true;
     }
     return false;
 };
 
-// Updated /link command with adminId
+const checkChannelMembership = async (ctx, userId) => {
+    try {
+        const member = await ctx.telegram.getChatMember(FORCE_CHANNEL_ID, userId);
+        return !['left', 'kicked'].includes(member.status);
+    } catch (error) {
+        console.error('Error checking channel membership:', error);
+        return false;
+    }
+};
+
 bot.command(['link', 'sl'], isAdmin, async (ctx) => {
     try {
         const args = ctx.message.text.split(' ').slice(1);
@@ -155,7 +188,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             await logger.command(
                 ctx.from.id,
-                `${ctx.from.first_name} (${ctx.from.username})` || 'Unknown',
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Link command used',
                 'SUCCESS',
                 `File stored with ID: ${retrievalLink}`
@@ -167,7 +200,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
     } catch (error) {
         await logger.error(
             ctx.from.id,
-           `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
             'Link command used',
             'FAILED',
             error.message
@@ -176,8 +209,6 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
         await ctx.reply('Error storing file. Please check if the link is from the target channel.');
     }
 });
-
-// Updated /batch command with adminId
 bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
     try {
         const args = ctx.message.text.split(' ').slice(1);
@@ -193,19 +224,16 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             return ctx.reply('Invalid range. Maximum range is 100 messages.');
         }
 
-        const uniqueId = crypto.randomBytes(8).toString('hex');
+        const uniqueId = generateUniqueId();
         const progressMsg = await ctx.reply('Processing messages...');
         
-        // Create array of message IDs to process
         const messageIds = Array.from({ length: endId - startId + 1 }, (_, i) => startId + i);
-        
-        // Process messages in parallel with controlled concurrency
         const BATCH_SIZE = 10;
         const files = [];
         
         for (let i = 0; i < messageIds.length; i += BATCH_SIZE) {
             const batch = messageIds.slice(i, i + BATCH_SIZE);
-            const batchResults = await Promise.all(batch.map(async (msgId) => {
+            await Promise.all(batch.map(async (msgId) => {
                 try {
                     const message = await ctx.telegram.forwardMessage(
                         ctx.chat.id,
@@ -215,16 +243,15 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
                     );
                     
                     if (message) {
-                        const fileData = {
-                            file_name: message.document?.file_name || 'file',
-                            file_id: message.document?.file_id || message.photo?.[0]?.file_id || message.video?.file_id,
-                            file_type: message.document ? 'document' : message.photo ? 'photo' : 'video',
-                            original_caption: message.caption || '',
-                            stored_by: ctx.from.id,
-                            unique_id: uniqueId,
-                            message_id: msgId
-                        };
-                        files.push(fileData);
+                        const fileData = getFileDataFromMessage(message);
+                        if (fileData) {
+                            files.push({
+                                ...fileData,
+                                stored_by: ctx.from.id,
+                                unique_id: uniqueId,
+                                message_id: msgId
+                            });
+                        }
                     }
                     await ctx.telegram.deleteMessage(ctx.chat.id, message.message_id);
                 } catch (error) {
@@ -232,7 +259,6 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
                 }
             }));
             
-            // Update progress
             await ctx.telegram.editMessageText(
                 ctx.chat.id,
                 progressMsg.message_id,
@@ -241,7 +267,6 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             );
         }
 
-        // Bulk insert files
         if (files.length > 0) {
             await File.insertMany(files);
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
@@ -250,7 +275,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
                 `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Batch command used',
                 'SUCCESS',
-                `Stored ${files.length} files\n URL: ${retrievalLink}`
+                `Stored ${files.length} files`
             );
             await ctx.reply(`✅ Stored ${files.length} files!\n🔗 Retrieval link: ${retrievalLink}`);
         } else {
@@ -265,7 +290,6 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
     }
 });
 
-// Updated file retrieval logic in start command
 bot.command('start', async (ctx) => {
     try {
         await User.findOneAndUpdate(
@@ -278,39 +302,27 @@ bot.command('start', async (ctx) => {
             },
             { upsert: true, new: true }
         );
-    } catch (error) {
-        console.error('Error updating user:', error);
-    }
-    const uniqueId = ctx.message.text.split(' ')[1];
-    
-    if (uniqueId) {
-        try {
+
+        const uniqueId = ctx.message.text.split(' ')[1];
+        
+        if (uniqueId) {
             const files = await File.find({ unique_id: uniqueId }).sort({ message_id: 1 });
             if (!files.length) return ctx.reply('Files not found.');
-    
-            if(!ADMIN_IDS.includes(ctx.from.id)){
-                try {
-                    const member = await ctx.telegram.getChatMember(FORCE_CHANNEL_ID, ctx.from.id)
-                    if(member.status == 'left' || member.status == 'kicked'){
-                        const joinKeyboard = Markup.inlineKeyboard([
-                            Markup.button.url('Join Channel', `https://t.me/${FORCE_CHANNEL_USERNAME}`),
-                            Markup.button.callback('✅ I\'ve Joined', `check_join_${uniqueId}` )
-                        ]);
-                        await ctx.reply('⚠️ To access the files, please join our channel first.', joinKeyboard);
-                        return;
-                    }
-                } catch (error) {
-                    await ctx.reply('Error verifying channel membership');
+
+            if (!ADMIN_IDS.includes(ctx.from.id)) {
+                const isMember = await checkChannelMembership(ctx, ctx.from.id);
+                if (!isMember) {
+                    const joinKeyboard = Markup.inlineKeyboard([
+                        Markup.button.url('Join Channel', `https://t.me/${FORCE_CHANNEL_USERNAME}`),
+                        Markup.button.callback('✅ I\'ve Joined', `check_join_${uniqueId}`)
+                    ]);
+                    await ctx.reply('⚠️ To access the files, please join our channel first.', joinKeyboard);
                     return;
                 }
             }
-    
-            const adminId = files[0].stored_by;
-            let admin = null;
-            if (adminId) {
-                admin = await Admin.findOne({ admin_id: adminId });
-            }
-    
+
+            const admin = files[0].stored_by ? await Admin.findOne({ admin_id: files[0].stored_by }) : null;
+
             await logger.command(
                 ctx.from.id,
                 `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
@@ -318,38 +330,18 @@ bot.command('start', async (ctx) => {
                 'SUCCESS',
                 `Retrieved ${files.length} files with URL: https://t.me/${ctx.botInfo.username}?start=${uniqueId}`
             );
-    
+
             let sendingMsg = await ctx.reply(`⌛️ Sending ${files.length} file(s)...`);
             const sentMessages = [];
-    
-            // If auto-delete is enabled, send warning first
+
             if (AUTO_DELETE) {
                 const warningMsg = await ctx.reply(`⚠️ Warning! These files will be automatically deleted in ${DELETE_MINUTES} minutes. Forward them now to keep copies!`);
                 sentMessages.push(warningMsg.message_id);
             }
-    
-            // Send all files once
+
             for (const file of files) {
                 try {
-                    const caption = file.original_caption || '';    
-                    let sentMessage;
-                    switch (file.file_type) {
-                        case 'document':
-                            sentMessage = await ctx.telegram.sendDocument(ctx.chat.id, file.file_id, { caption });
-                            break;
-                        case 'photo':
-                            sentMessage = await ctx.telegram.sendPhoto(ctx.chat.id, file.file_id, { caption });
-                            break;
-                        case 'video':
-                            sentMessage = await ctx.telegram.sendVideo(ctx.chat.id, file.file_id, { caption });
-                            break;
-                        case 'animation':
-                            sentMessage = await ctx.telegram.sendAnimation(ctx.chat.id, file.file_id, { caption });
-                            break;
-                        case 'sticker':
-                            sentMessage = await ctx.telegram.sendSticker(ctx.chat.id, file.file_id);
-                            break;
-                    }
+                    const sentMessage = await sendFile(ctx, file);
                     if (sentMessage) {
                         sentMessages.push(sentMessage.message_id);
                     }
@@ -357,12 +349,11 @@ bot.command('start', async (ctx) => {
                     console.error(`Error sending file ${file.file_name}:`, error);
                 }
             }
-    
+
             await ctx.telegram.deleteMessage(ctx.chat.id, sendingMsg.message_id);
             const completionMsg = await ctx.reply('✅ All files sent!');
             sentMessages.push(completionMsg.message_id);
-    
-            // If auto-delete is enabled, schedule deletion
+
             if (AUTO_DELETE) {
                 setTimeout(async () => {
                     try {
@@ -375,103 +366,75 @@ bot.command('start', async (ctx) => {
                     }
                 }, DELETE_MINUTES * 60 * 1000);
             }
-    
-        } catch (error) {
-            await logger.error(
-                ctx.from.id,
-                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
-                'Start command used',
-                'FAILED',
-                error.message
-            );
-            console.error('Error retrieving files:', error);
-            await ctx.reply('Error retrieving files. Please try again.');
-        }
-    } else {
-        try {
+        } else {
             await logger.command(
                 ctx.from.id,
                 `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'start command used',
                 'SUCCESS',
-                `Welcome message sent!`
-            )
+                'Welcome message sent!'
+            );
 
             await ctx.replyWithPhoto(descriptions.welcome_image, {
-                caption: descriptions.welcome_text,
+                caption: `Hello ${ctx.from.first_name}\n\n${descriptions.welcome_text}`,
                 parse_mode: 'Markdown',
                 ...mainKeyboard
             });
-        } catch (error) {
-            await ctx.reply('Error starting bot. Please try again.');
         }
+    } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'Start command used',
+            'FAILED',
+            error.message
+        );
+        await ctx.reply('Error starting bot. Please try again.');
     }
 });
 
 bot.action(/^check_join_(.+)/, async (ctx) => {
     const uniqueId = ctx.match[1];
     try {
-        const member = await ctx.telegram.getChatMember(FORCE_CHANNEL_ID, ctx.from.id);
-        if (['left', 'kicked'].includes(member.status)) {
+        const isMember = await checkChannelMembership(ctx, ctx.from.id);
+        if (!isMember) {
             await ctx.answerCbQuery('❌ You haven\'t joined the channel yet!');
         } else {
             await ctx.deleteMessage();
-            // Trigger file sending
-            ctx.reply('Go back to the post and click again to get the files');
+            await ctx.reply('Go back to the post and click again to get the files');
         }
     } catch (error) {
         await ctx.answerCbQuery('Error verifying membership.');
     }
 });
 
-bot.action('home', async (ctx) => {
+// Helper function for menu actions
+const handleMenuAction = async (ctx, action) => {
     try {
-        await ctx.editMessageCaption(descriptions.home, {
+        const caption = action === 'home' 
+            ? `Hello ${ctx.from.first_name}\n\n${descriptions[action]}`
+            : descriptions[action];
+            
+        await ctx.editMessageCaption(caption, {
             parse_mode: 'Markdown',
             ...mainKeyboard
         });
     } catch (error) {
-        console.error('Error handling home button:', error);
+        console.error(`Error handling ${action} button:`, error);
     }
-});
+};
 
-bot.action('support', async (ctx) => {
-    try {
-        await ctx.editMessageCaption(descriptions.support, {
-            parse_mode: 'Markdown',
-            ...mainKeyboard
-        });
-    } catch (error) {
-        console.error('Error handling support button:', error);
-    }
-});
+// Menu actions
+bot.action('home', ctx => handleMenuAction(ctx, 'home'));
+bot.action('support', ctx => handleMenuAction(ctx, 'support'));
+bot.action('about', ctx => handleMenuAction(ctx, 'about'));
+bot.action('commands', ctx => handleMenuAction(ctx, 'commands'));
 
-bot.action('about', async (ctx) => {
-    try {
-        await ctx.editMessageCaption(descriptions.about, {
-            parse_mode: 'Markdown',
-            ...mainKeyboard
-        });
-    } catch (error) {
-        console.error('Error handling about button:', error);
-    }
-});
-
-bot.action('commands', async (ctx) => {
-    try {
-        await ctx.editMessageCaption(descriptions.commands, {
-            parse_mode: 'Markdown',
-            ...mainKeyboard
-        });
-    } catch (error) {
-        console.error('Error handling commands button:', error);
-    }
-});
-
-const PORT = process.env.PORT || 8000
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Health check server is running on port ${PORT}`);
 });
+
 const startBot = async () => {
     try {
         await bot.launch();
