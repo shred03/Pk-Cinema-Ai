@@ -275,7 +275,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
                 `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Batch command used',
                 'SUCCESS',
-                `Stored ${files.length} files`
+                `Stored ${files.length} files \n URL: ${retrievalLink}`
             );
             await ctx.reply(`✅ Stored ${files.length} files!\n🔗 Retrieval link: ${retrievalLink}`);
         } else {
