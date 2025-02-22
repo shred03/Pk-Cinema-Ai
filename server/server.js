@@ -10,6 +10,7 @@ const descriptions = require('./script');
 const express = require('express');
 const Logger = require('./logs/Logs');
 const app = express();
+const setupStats = require('./plugins/stats')
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
@@ -30,6 +31,7 @@ const AUTO_DELETE = process.env.AUTO_DELETE_FILES === 'true';
 const DELETE_MINUTES = parseInt(process.env.AUTO_DELETE_TIME) || 30;
 const logger = new Logger(bot, process.env.LOG_CHANNEL_ID);
 setupBroadcast(bot, logger);
+setupStats(bot, logger)
 
 const mainKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🏠 Home', 'home')],
