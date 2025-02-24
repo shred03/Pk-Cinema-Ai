@@ -11,7 +11,7 @@ module.exports = function setupStats(bot, logger) {
 
     const isAdmin = async (ctx, next) => {
         if (!ADMIN_IDS.includes(ctx.from.id)) {
-            return ctx.reply('❌ Only admins can use this command');
+            return ctx.reply('❌ 𝙊𝙣𝙡𝙮 𝙖𝙙𝙢𝙞𝙣𝙨 𝙘𝙖𝙣 𝙪𝙨𝙚 𝙩𝙝𝙞𝙨 𝙘𝙤𝙢𝙢𝙖𝙣𝙙');
         }
         return next();
     };
@@ -42,7 +42,7 @@ module.exports = function setupStats(bot, logger) {
                 filesToday
             ] = await Promise.all([
                 User.countDocuments({}),
-                User.countDocuments({ timestamp: { $gte: todayStart } }),
+                User.countDocuments({ created_at: { $gte: todayStart } }),
                 File.countDocuments({}),
                 File.countDocuments({ timestamp: { $gte: todayStart } })
             ]);
