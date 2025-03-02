@@ -68,10 +68,10 @@ npm start
   ```
 
 - `/broadcast`: Broadcast a message
-  ```
+
 
 - `/stats`: View bot statistics
-  ```
+  
 
 ### User Commands
 
