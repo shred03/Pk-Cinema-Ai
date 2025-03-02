@@ -231,6 +231,14 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
             ].join('\n');
         
             await ctx.reply(responseMessage, {parse_mode: 'HTML'});
+
+            await logger.command(
+                ctx.from.id,
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+                'Link command used',
+                'SUCCESS',
+                `Single file stored \nURL: ${retrievalLink}`
+            );
         }
     } catch (error) {
         await logger.error(
@@ -335,6 +343,14 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             ].join('\n');
         
             await ctx.reply(responseMessage, {parse_mode: 'HTML'});
+
+            await logger.command(
+                ctx.from.id,
+                ctx.from.username || 'Unknown',
+                'Batch command used',
+                'SUCCESS',
+                `Total ${files.length} files stored \n URL: ${retrievalLink}`,
+            );
         }
         await ctx.telegram.deleteMessage(ctx.chat.id, progressMsg.message_id);
         
