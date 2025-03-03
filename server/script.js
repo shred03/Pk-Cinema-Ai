@@ -33,6 +33,8 @@ const descriptions = {
 • /batch or /ml - Store files from message range
 • /stats - View Bot Statistics
 • /broadcast - Broadcast Message
+• /post movie_name link - Create Post Direclty
+• /setchannel channelId - Set Channel Where Post Will Go.
 
 👤 User Commands:
 • /start - Start the bot
