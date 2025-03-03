@@ -198,7 +198,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
                 ctx.message.text,
                 `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Link command used',
-                'FAILED',
+                'Failed to store',
                 'No Link Provided'
             );
             return ctx.reply('Please provide the message link in the following format:\n/link https://t.me/c/xxxxx/123');
