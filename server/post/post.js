@@ -85,11 +85,13 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
         const synopsis = movieData.overview || 'No synopsis available';
         
         // Create the caption with quote formatting
-        const caption = `<b>${movieData.title} (${releaseYear})
+        const caption = `<b>${movieData.title} (${releaseYear})</b>
+
 » 𝗔𝘂𝗱𝗶𝗼: Hin+Eng+Tam+Tel+Kan+Mal (E-subs)
 » 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p | 720p | 1080p 
 » 𝗚𝗲𝗻𝗿𝗲: ${genres}
-» 𝗦𝘆𝗻𝗼𝗽𝘀𝗶𝘀:</b>
+
+» 𝗦𝘆𝗻𝗼𝗽𝘀𝗶𝘀:
 <blockquote>${synopsis}</blockquote>
     
 <b>@Teamxpirates</b>
