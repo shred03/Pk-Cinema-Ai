@@ -85,13 +85,11 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
         const synopsis = movieData.overview || 'No synopsis available';
         
         // Create the caption with quote formatting
-        const caption = `<b>${movieData.title} (${releaseYear})</b>
-        
+        const caption = `<b>${movieData.title} (${releaseYear})
 » 𝗔𝘂𝗱𝗶𝗼: Hin+Eng+Tam+Tel+Kan+Mal (E-subs)
 » 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p | 720p | 1080p 
 » 𝗚𝗲𝗻𝗿𝗲: ${genres}
-
-» 𝗦𝘆𝗻𝗼𝗽𝘀𝗶𝘀:
+» 𝗦𝘆𝗻𝗼𝗽𝘀𝗶𝘀:</b>
 <blockquote>${synopsis}</blockquote>
     
 <b>@Teamxpirates</b>
@@ -120,7 +118,57 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
         return null;
     };
 
-    // Command to set a channel for posting
+    bot.command(['setsticker', 'ss'], isAdmin, async (ctx) => {
+        try {
+            // Check if a sticker is forwarded or mentioned
+            const repliedMessage = ctx.message.reply_to_message;
+            
+            if (!repliedMessage || !repliedMessage.sticker) {
+                return ctx.reply('❌ Please forward or reply to a sticker with this command');
+            }
+
+            const stickerId = repliedMessage.sticker.file_id;
+
+            // Get the admin's current channel setting
+            const postSetting = await Post.getLatestForAdmin(ctx.from.id);
+            
+            if (!postSetting) {
+                return ctx.reply('❌ No channel set. Please use /setchannel command first.');
+            }
+
+            // Update the post setting with the sticker ID
+            await Post.findOneAndUpdate(
+                { adminId: ctx.from.id },
+                { 
+                    stickerId,
+                    updatedAt: new Date()
+                },
+                { upsert: true, new: true }
+            );
+
+            await logger.command(
+                ctx.from.id,
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+                'Set sticker command used',
+                'SUCCESS',
+                `Sticker set: ${stickerId}`
+            );
+
+            return ctx.reply(`✅ Sticker has been set for your channel posts.`);
+            
+        } catch (error) {
+            console.error('Error setting sticker:', error);
+            await logger.error(
+                ctx.from.id,
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+                'Set sticker command used',
+                'FAILED',
+                error.message
+            );
+            return ctx.reply('Error setting sticker. Please try again.');
+        }
+    });
+
     bot.command(['setchannel', 'sc'], isAdmin, async (ctx) => {
         try {
             const args = ctx.message.text.split(' ').slice(1);
@@ -321,7 +369,7 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
     });
     
     // Handle confirm post action
-    bot.action(/^confirm_post_(.+)$/, async (ctx) => {
+     bot.action(/^confirm_post_(.+)$/, async (ctx) => {
         try {
             const postId = ctx.match[1];
             
@@ -333,18 +381,32 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
             
             const postData = bot.context.postData[postId];
             
+            // Get the admin's channel setting again to ensure we have the latest
+            const postSetting = await Post.getLatestForAdmin(ctx.from.id);
+            
             // Send post to channel
+            let sentMessage;
             if (postData.posterUrl) {
-                await ctx.telegram.sendPhoto(postData.channelId, postData.posterUrl, {
+                sentMessage = await ctx.telegram.sendPhoto(postData.channelId, postData.posterUrl, {
                     caption: postData.post.caption,
                     parse_mode: 'HTML',
                     ...postData.post.keyboard
                 });
             } else {
-                await ctx.telegram.sendMessage(postData.channelId, postData.post.caption, {
+                sentMessage = await ctx.telegram.sendMessage(postData.channelId, postData.post.caption, {
                     parse_mode: 'HTML',
                     ...postData.post.keyboard
                 });
+            }
+
+            // Forward sticker if set
+            if (postSetting && postSetting.stickerId) {
+                try {
+                    await ctx.telegram.sendSticker(postData.channelId, postSetting.stickerId);
+                } catch (stickerError) {
+                    console.error('Error sending sticker:', stickerError);
+                    // Optionally log the sticker sending error, but don't stop the post process
+                }
             }
             
             // Show success message
@@ -357,7 +419,7 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
                 `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Post to channel',
                 'SUCCESS',
-                `${postData.movieData.title} to channel ${postData.channelInfo}`
+                `Posted ${postData.movieData.title} to channel ${postData.channelInfo}`
             );
             
             // Clean up stored data

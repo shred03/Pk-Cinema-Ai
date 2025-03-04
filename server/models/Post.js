@@ -9,6 +9,11 @@ const PostSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    stickerId: {
+        type: String,
+        required: false,
+        default: null
+    },
     adminId: {
         type: Number,
         required: true
