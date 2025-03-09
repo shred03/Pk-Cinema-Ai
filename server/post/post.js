@@ -83,13 +83,27 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
             
         const genres = formatGenres(movieData.genres);
         const synopsis = movieData.overview || 'No synopsis available';
+        const runtime = movieData.runtime || "NA";
+        
+        function formatRuntime(minutes) {
+            if (!minutes || isNaN(minutes)) return "NA";
+            
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+          
+            return hours > 0 
+              ? `${hours} hr ${remainingMinutes} min`
+              : `${remainingMinutes} min`;
+        }
+        const formattedRuntime = formatRuntime(runtime);
         
         // Create the caption with quote formatting
         const caption = `<b>${movieData.title} (${releaseYear})</b>
 
-» 𝗔𝘂𝗱𝗶𝗼: Hin+Eng+Tam+Tel+Kan+Mal (E-subs)
+» 𝗔𝘂𝗱𝗶𝗼: Hindi+English (E-subs)
 » 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p | 720p | 1080p 
 » 𝗚𝗲𝗻𝗿𝗲: ${genres}
+» 𝗥𝘂𝗻𝘁𝗶𝗺𝗲: ${formattedRuntime}
 
 » 𝗦𝘆𝗻𝗼𝗽𝘀𝗶𝘀:
 <blockquote>${synopsis}</blockquote>
