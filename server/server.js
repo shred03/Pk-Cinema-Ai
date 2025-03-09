@@ -12,6 +12,7 @@ const Logger = require('./logs/Logs');
 const app = express();
 const setupStats = require('./plugins/stats')
 const setupPostCommand = require('./post/post');
+const config = require('./config');
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
@@ -23,14 +24,14 @@ mongoose.connect(process.env.MONGODB_URI,{
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-const ADMIN_IDS = process.env.ADMIN_IDS.split(',').map(id => parseInt(id));
-const DATABASE_FILE_CHANNELS = process.env.DATABASE_FILE_CHANNELS.split(',').map(id => id.trim());
-const FORCE_CHANNEL_ID = process.env.FORCE_CHANNEL_ID;
-const FORCE_CHANNEL_USERNAME = process.env.FORCE_CHANNEL_USERNAME ||'PirecyKings3';
-const AUTO_DELETE = process.env.AUTO_DELETE_FILES === 'true';
-const DELETE_MINUTES = parseInt(process.env.AUTO_DELETE_TIME) || 15;
-const logger = new Logger(bot, process.env.LOG_CHANNEL_ID);
+const bot = new Telegraf(config.BOT_TOKEN);
+const ADMIN_IDS = config.ADMIN_IDS.split(',').map(id => parseInt(id));
+const DATABASE_FILE_CHANNELS = config.DATABASE_FILE_CHANNELS.split(',').map(id => id.trim());
+const FORCE_CHANNEL_ID = config.FORCE_CHANNEL_ID;
+const FORCE_CHANNEL_USERNAME = config.FORCE_CHANNEL_USERNAME ||'PirecyKings3';
+const AUTO_DELETE = config.AUTO_DELETE_FILES === 'true';
+const DELETE_MINUTES = parseInt(config.AUTO_DELETE_TIME) || 10;
+const logger = new Logger(bot, config.LOG_CHANNEL_ID);
 setupBroadcast(bot, logger);
 setupStats(bot, logger)
 setupPostCommand(bot, logger, ADMIN_IDS)

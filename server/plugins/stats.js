@@ -3,9 +3,10 @@ const User = require('../models/User');
 const File = require('../models/File');
 const Admin = require('../models/Admin');
 const os = require('os');
+const config = require('../config');
 
 module.exports = function setupStats(bot, logger) {
-    const ADMIN_IDS = process.env.ADMIN_IDS.split(',').map(id => parseInt(id));
+    const ADMIN_IDS = config.ADMIN_IDS.split(',').map(id => parseInt(id));
 
     const ADMIN_COUNT = ADMIN_IDS.length;
 
