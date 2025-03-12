@@ -32,8 +32,8 @@ class Logger {
             const logMessage = `
 📝 Bot Log Entry
 ⏰ Time: ${timestamp}
-👤 User: ${firstName}
-👤 UserId: ${userId}
+👤 User: <code>${firstName}</code>
+👤 UserId: <code>${userId}</code>
 🤖 Command: ${command}
 📊 Status: ${status}
 🔍 Type: ${type}
@@ -49,7 +49,7 @@ ${details ? `📋 Details: ${details}` : ''}`;
             // Send to Telegram channel
             if (this.logChannelId) {
                 await this.bot.telegram.sendMessage(this.logChannelId, logMessage, {
-                    parse_mode: 'Markdown'
+                    parse_mode: 'HTML'
                 });
             }
 
