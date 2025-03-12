@@ -9,7 +9,7 @@ const config = {
     FORCE_CHANNEL_ID: process.env.FORCE_CHANNEL_ID,
     FORCE_CHANNEL_USERNAME: process.env.FORCE_CHANNEL_USERNAME,
     AUTO_DELETE_FILES: process.env.AUTO_DELETE_FILES === 'true',
-    AUTO_DELETE_TIME: process.env.AUTO_DELETE_TIME,
+    AUTO_DELETE_TIME: parseInt(process.env.AUTO_DELETE_TIME),
     LOG_CHANNEL_ID: process.env.LOG_CHANNEL_ID
 
 }
