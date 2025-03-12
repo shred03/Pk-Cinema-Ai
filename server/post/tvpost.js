@@ -59,10 +59,10 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
             new Date(seriesData.first_air_date).getFullYear() : 'N/A';
             
         const genres = formatGenres(seriesData.genres);
-        const synopsis = seriesData.overview || 'No synopsis available';
         const numberOfSeasons = seriesData.number_of_seasons || "NA";
         const episodeRuntime = seriesData.episode_run_time && seriesData.episode_run_time.length > 0 ? 
             seriesData.episode_run_time[0] : "NA";
+        const episodeCounts = seriesData.seasons.map(season => season.episode_count).join("/");
         
         function formatRuntime(minutes) {
             if (!minutes || isNaN(minutes)) return "NA";
@@ -76,16 +76,16 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
         }
         const formattedRuntime = formatRuntime(episodeRuntime);
         
-        const caption = `<b>${seriesData.name} (${firstAirYear})
-
-» 𝗔𝘂𝗱𝗶𝗼: Hindi+English (E-subs)
+        const caption = `<b>${seriesData.name} (${firstAirYear})</b>
+╭──────────────────────
+» 𝗔𝘂𝗱𝗶𝗼: Hindi-English (E-subs)
 » 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p | 720p | 1080p 
-» 𝗚𝗲𝗻𝗿𝗲: ${genres}
-» 𝗘𝗽𝗶𝘀𝗼𝗱𝗲 𝗥𝘂𝗻𝘁𝗶𝗺𝗲: ${formattedRuntime}
+» 𝗥𝘂𝗻𝘁𝗶𝗺𝗲: ${formattedRuntime}
 » 𝗦𝗲𝗮𝘀𝗼𝗻𝘀: ${numberOfSeasons}
-
-» 𝗦𝘆𝗻𝗼𝗽𝘀𝗶𝘀:</b>
-<blockquote>${synopsis}</blockquote>
+» 𝗘𝗽𝗶𝘀𝗼𝗱𝗲𝘀: ${episodeCounts}
+├──────────────────────
+» 𝗚𝗲𝗻𝗿𝗲𝘀: ${genres}
+╰──────────────────────
     
 <b>@Teamxpirates</b>
 <blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
@@ -111,8 +111,13 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
         };
     };
 
-    const getTVSeriesPosterUrl = (seriesData) => {
-        if (seriesData.poster_path) {
+    const getTVSeriesImageUrl = (seriesData) => {
+        // Use backdrop_path (16:9 ratio) primarily
+        if (seriesData.backdrop_path) {
+            return `https://image.tmdb.org/t/p/original${seriesData.backdrop_path}`;
+        }
+        // Fall back to poster_path if backdrop is not available
+        else if (seriesData.poster_path) {
             return `https://image.tmdb.org/t/p/w500${seriesData.poster_path}`;
         }
         return null;
@@ -322,7 +327,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
             }
 
             const post = createTVSeriesPost(seriesData, seasonLinks);
-            const posterUrl = getTVSeriesPosterUrl(seriesData);
+            const imageUrl = getTVSeriesImageUrl(seriesData);
             const postSetting = await Post.getLatestForAdmin(ctx.from.id);
             
             const channelInfo = postSetting.channelUsername ? 
@@ -342,14 +347,14 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
             bot.context.tvPostData[postId] = {
                 seriesData,
                 seasonLinks,
-                posterUrl,
+                imageUrl,
                 post,
                 channelId: postSetting.channelId,
                 channelInfo
             };
             
-            if (posterUrl) {
-                await ctx.telegram.sendPhoto(ctx.chat.id, posterUrl, {
+            if (imageUrl) {
+                await ctx.telegram.sendPhoto(ctx.chat.id, imageUrl, {
                     caption: `<b>Preview:</b>\n\n${post.caption}\n\n<i>Ready to post to ${channelInfo}</i>`,
                     parse_mode: 'HTML',
                     ...post.keyboard
@@ -407,8 +412,8 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
             const postSetting = await Post.getLatestForAdmin(ctx.from.id);
             
             let sentMessage;
-            if (postData.posterUrl) {
-                sentMessage = await ctx.telegram.sendPhoto(postData.channelId, postData.posterUrl, {
+            if (postData.imageUrl) {
+                sentMessage = await ctx.telegram.sendPhoto(postData.channelId, postData.imageUrl, {
                     caption: postData.post.caption,
                     parse_mode: 'HTML',
                     ...postData.post.keyboard
