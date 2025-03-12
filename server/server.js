@@ -28,9 +28,9 @@ const bot = new Telegraf(config.BOT_TOKEN);
 const ADMIN_IDS = config.ADMIN_IDS.split(',').map(id => parseInt(id));
 const DATABASE_FILE_CHANNELS = config.DATABASE_FILE_CHANNELS.split(',').map(id => id.trim());
 const FORCE_CHANNEL_ID = config.FORCE_CHANNEL_ID;
-const FORCE_CHANNEL_USERNAME = config.FORCE_CHANNEL_USERNAME ||'PirecyKings3';
-const AUTO_DELETE = config.AUTO_DELETE_FILES === 'true';
-const DELETE_MINUTES = config.AUTO_DELETE_TIME || 10;
+const FORCE_CHANNEL_USERNAME = config.FORCE_CHANNEL_USERNAME;
+const AUTO_DELETE = config.AUTO_DELETE_FILES;
+const DELETE_MINUTES = config.AUTO_DELETE_TIME;
 const logger = new Logger(bot, config.LOG_CHANNEL_ID);
 setupBroadcast(bot, logger);
 setupStats(bot, logger)
