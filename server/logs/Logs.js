@@ -26,13 +26,12 @@ class Logger {
                 status,
                 details
             };
-            const firstName = username.replace(/_/g, '\\_');
 
             // Create log message
             const logMessage = `
 📝 Bot Log Entry
 ⏰ Time: ${timestamp}
-👤 User: <code>${firstName}</code>
+👤 User: <code>${username}</code>
 👤 UserId: <code>${userId}</code>
 🤖 Command: ${command}
 📊 Status: ${status}
