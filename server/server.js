@@ -30,7 +30,7 @@ const DATABASE_FILE_CHANNELS = config.DATABASE_FILE_CHANNELS.split(',').map(id =
 const FORCE_CHANNEL_ID = config.FORCE_CHANNEL_ID;
 const FORCE_CHANNEL_USERNAME = config.FORCE_CHANNEL_USERNAME ||'PirecyKings3';
 const AUTO_DELETE = config.AUTO_DELETE_FILES === 'true';
-const DELETE_MINUTES = parseInt(config.AUTO_DELETE_TIME) || 10;
+const DELETE_MINUTES = config.AUTO_DELETE_TIME || 10;
 const logger = new Logger(bot, config.LOG_CHANNEL_ID);
 setupBroadcast(bot, logger);
 setupStats(bot, logger)
