@@ -13,6 +13,7 @@ const app = express();
 const setupStats = require('./plugins/stats')
 const setupPostCommand = require('./post/post');
 const config = require('./config');
+const setupTVPostCommand = require('./post/tvpost');
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
@@ -34,7 +35,8 @@ const DELETE_MINUTES = config.AUTO_DELETE_TIME;
 const logger = new Logger(bot, config.LOG_CHANNEL_ID);
 setupBroadcast(bot, logger);
 setupStats(bot, logger)
-setupPostCommand(bot, logger, ADMIN_IDS)
+setupPostCommand(bot, logger, ADMIN_IDS);
+setupTVPostCommand(bot, logger, ADMIN_IDS);
 
 const mainKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🏠 Home', 'home')],
