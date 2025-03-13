@@ -14,6 +14,7 @@ const setupStats = require('./plugins/stats')
 const setupPostCommand = require('./post/post');
 const config = require('./config');
 const setupTVPostCommand = require('./post/tvpost');
+const {FORCE_CHANNELS} = require('./plugins/force');
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
@@ -186,10 +187,21 @@ const storeFileFromMessage = async (message, uniqueId, adminId, channelId) => {
 
 const checkChannelMembership = async (ctx, userId) => {
     try {
-        const member = await ctx.telegram.getChatMember(FORCE_CHANNEL_ID, userId);
-        return !['left', 'kicked'].includes(member.status);
+        for (const channel of FORCE_CHANNELS) {
+            try {
+                const member = await ctx.telegram.getChatMember(channel.id, userId);
+                // If user is not a member of any one channel, return false
+                if (['left', 'kicked'].includes(member.status)) {
+                    return false;
+                }
+            } catch (error) {
+                console.error(`Error checking membership for channel ${channel.id}:`, error);
+                return false; // Assume failure means the user isn't a member
+            }
+        }
+        return true; // If loop completes, user is a member of all channels
     } catch (error) {
-        console.error('Error checking channel membership:', error);
+        console.error('Error in checkChannelMembership:', error);
         return false;
     }
 };
@@ -379,7 +391,7 @@ bot.command('start', async (ctx) => {
         );
 
         const uniqueId = ctx.message.text.split(' ')[1];
-        
+
         if (uniqueId) {
             const files = await File.find({ unique_id: uniqueId }).sort({ message_id: 1 });
             if (!files.length) return ctx.reply('Files not found.');
@@ -387,11 +399,20 @@ bot.command('start', async (ctx) => {
             if (!ADMIN_IDS.includes(ctx.from.id)) {
                 const isMember = await checkChannelMembership(ctx, ctx.from.id);
                 if (!isMember) {
-                    const joinKeyboard = Markup.inlineKeyboard([
-                        Markup.button.url('Join Channel', `https://t.me/${FORCE_CHANNEL_USERNAME}`),
-                        Markup.button.callback('✅ I\'ve Joined', `check_join_${uniqueId}`)
-                    ]);
-                    await ctx.reply('⚠️ To access the files, please join our channel first.', joinKeyboard);
+                    // Create buttons for all channels
+                    const channelButtons = FORCE_CHANNELS.map(channel => 
+                        Markup.button.url(`Join ${channel.name}`, `https://t.me/${channel.username}`)
+                    );
+                    
+                    // Add the check button at the end
+                    channelButtons.push(Markup.button.callback('✅ I\'ve Joined', `check_join_${uniqueId}`));
+                    
+                    const joinKeyboard = Markup.inlineKeyboard(
+                        // Arrange buttons in rows of 1 or 2 depending on your preference
+                        channelButtons.map(button => [button])
+                    );
+                    
+                    await ctx.reply('😊 To access the files, please join of our channels:', joinKeyboard);
                     return;
                 }
             }
@@ -435,7 +456,10 @@ bot.command('start', async (ctx) => {
                         for (const msgId of sentMessages) {
                             await ctx.telegram.deleteMessage(ctx.chat.id, msgId);
                         }
-                        await ctx.reply('🗑️ Files have been automatically deleted.');
+
+                        const fileDeleteWarningMsg = '<blockquote>🗑️ Files have been automatically deleted.</blockquote>';
+
+                        await ctx.reply(fileDeleteWarningMsg, {parse_mode: 'HTML'});
                     } catch (error) {
                         console.error('Auto-delete error:', error);
                     }
@@ -449,8 +473,7 @@ bot.command('start', async (ctx) => {
                 'SUCCESS',
                 'Welcome message sent!'
             );
-
-            await ctx.replyWithPhoto(descriptions.welcome_image, {
+            await ctx.replyWithVideo(descriptions.welcome_video, {
                 caption: `Hello ${ctx.from.first_name}\n\n${descriptions.welcome_text}`,
                 parse_mode: 'Markdown',
                 ...mainKeyboard
@@ -473,13 +496,16 @@ bot.action(/^check_join_(.+)/, async (ctx) => {
     try {
         const isMember = await checkChannelMembership(ctx, ctx.from.id);
         if (!isMember) {
-            await ctx.answerCbQuery('❌ You haven\'t joined the channel yet!');
+            await ctx.answerCbQuery('😒 You haven\'t joined the channels yet!');
         } else {
             await ctx.deleteMessage();
-            await ctx.reply('Go back to the post and click again to get the files');
+            await ctx.reply(`😍 Thank you for joining! Now send below message to retrieve your files...`);
+            // Trigger the start command with the uniqueId to send the files
+            await ctx.telegram.sendMessage(ctx.chat.id, `/start ${uniqueId}`);
         }
     } catch (error) {
-        await ctx.answerCbQuery('Error verifying membership.');
+        console.error('Error verifying membership:', error);
+        await ctx.answerCbQuery('Error verifying channel membership.');
     }
 });
 
