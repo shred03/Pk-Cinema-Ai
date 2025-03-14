@@ -40,7 +40,7 @@ setupTVPostCommand(bot, logger, ADMIN_IDS);
 const mainKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🏠 Home', 'home')],
     [
-        Markup.button.callback('🛠 Channels', 'join_channels'),
+        Markup.button.callback('📌Join Channels', 'join_channels'),
         Markup.button.callback('ℹ️ About', 'about')
     ],
     [Markup.button.callback('📋 Commands', 'commands')],
