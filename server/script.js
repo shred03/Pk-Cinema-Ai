@@ -19,11 +19,14 @@ const descriptions = {
 `,
 
     // Support section content
-    support: `
+    join_channels: `
 
-*ᴊᴏɪɴ ᴛʜᴇ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ʀᴇᴛʀɪᴠᴇ ʏᴏᴜʀ ғɪʟᴇ.*
+*ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟꜱ.*
     
-*ᴍᴏᴠɪᴇs & sᴇʀɪᴇs:* [ᴘɪʀᴇᴄʏ ᴋɪɴɢs](https://t.me/pirecykings2)
+*ꜱᴇʀɪᴇꜱ:* [ᴘɪʀᴇᴄʏ ᴋɪɴɢꜱ 2.0 👑](https://t.me/pirecykings2)
+*ᴍᴏᴠɪᴇꜱ:* [ᴘɪʀᴇᴄʏ ᴋɪɴɢꜱ 3.0 👑](https://t.me/pirecykings3)
+*ᴍᴄᴜ ᴄᴏʟʟᴇᴄᴛɪᴏɴ:* [ᴘᴋ ᴍᴄᴜ ᴍᴏᴠɪᴇꜱ & ꜱᴇʀɪᴇꜱ 👑](https://t.me/PK_MCU)
+*ᴅɪʀᴇᴄᴛᴏʀ & ꜰʀᴀɴᴄʜɪꜱᴇ ᴄᴏʟʟᴇᴄᴛɪᴏɴ:* [ᴘᴋ ᴄᴏʟʟᴇᴄᴛɪᴏɴ/ꜰʀᴀɴᴄʜɪꜱᴇ 👑](https://t.me/pirecykingcollectionandfranchise)
 `,
 
     commands: `🔍 *Available Commands*
@@ -35,6 +38,9 @@ const descriptions = {
 • /broadcast - Broadcast Message
 • /post movie_name link - Create Post Direclty
 • /setchannel channelId - Set Channel Where Post Will Go.
+• /tvpost series_name link - Create Post Direclty
+• /setsticker or /sc channelId/username - Set Channel Where Post Will Go.
+
 
 👤 User Commands:
 • /start - Start the bot
