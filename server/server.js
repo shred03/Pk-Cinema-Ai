@@ -29,8 +29,6 @@ mongoose.connect(process.env.MONGODB_URI,{
 const bot = new Telegraf(config.BOT_TOKEN);
 const ADMIN_IDS = config.ADMIN_IDS.split(',').map(id => parseInt(id));
 const DATABASE_FILE_CHANNELS = config.DATABASE_FILE_CHANNELS.split(',').map(id => id.trim());
-const FORCE_CHANNEL_ID = config.FORCE_CHANNEL_ID;
-const FORCE_CHANNEL_USERNAME = config.FORCE_CHANNEL_USERNAME;
 const AUTO_DELETE = config.AUTO_DELETE_FILES;
 const DELETE_MINUTES = config.AUTO_DELETE_TIME;
 const logger = new Logger(bot, config.LOG_CHANNEL_ID);
@@ -42,7 +40,7 @@ setupTVPostCommand(bot, logger, ADMIN_IDS);
 const mainKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🏠 Home', 'home')],
     [
-        Markup.button.callback('🛠 Join Channels', 'join_channels'),
+        Markup.button.callback('🛠 Channels', 'join_channels'),
         Markup.button.callback('ℹ️ About', 'about')
     ],
     [Markup.button.callback('📋 Commands', 'commands')],
@@ -473,7 +471,7 @@ bot.command('start', async (ctx) => {
                 'SUCCESS',
                 'Welcome message sent!'
             );
-            await ctx.replyWithVideo(descriptions.welcome_video, {
+            await ctx.replyWithPhoto(descriptions.welcome_image, {
                 caption: `Hello ${ctx.from.first_name}\n\n${descriptions.welcome_text}`,
                 parse_mode: 'Markdown',
                 ...mainKeyboard
