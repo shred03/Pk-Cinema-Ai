@@ -10,7 +10,8 @@ const config = {
     FORCE_CHANNEL_USERNAME: process.env.FORCE_CHANNEL_USERNAME || 'PirecyKings3',
     AUTO_DELETE_FILES: process.env.AUTO_DELETE_FILES === 'true',
     AUTO_DELETE_TIME: parseInt(process.env.AUTO_DELETE_TIME) || 7,
-    LOG_CHANNEL_ID: process.env.LOG_CHANNEL_ID
+    LOG_CHANNEL_ID: process.env.LOG_CHANNEL_ID,
+    GET2SHORT_API: process.env.GET2SHORT_API
 
 }
 

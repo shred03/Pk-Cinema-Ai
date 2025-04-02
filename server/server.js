@@ -15,6 +15,7 @@ const setupPostCommand = require('./post/post');
 const config = require('./config');
 const setupTVPostCommand = require('./post/tvpost');
 const {FORCE_CHANNELS} = require('./plugins/force');
+const get2short = require('./plugins/get2short');
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
@@ -238,14 +239,16 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
 
         if (stored) {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
-            // const shortUrl = await shortenLink(retrievalLink, uniqueId);
-            
-            const responseMessage = [
-                `✅ File stored successfully!`,
-                `🔗 Original URL: <code>${retrievalLink}</code>`
-            ].join('\n');
-        
-            await ctx.reply(responseMessage, {parse_mode: 'HTML'});
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
+            get2short(retrievalLink, uniqueId).then(shortUrl =>{
+                ctx.telegram.editMessageText(
+                    ctx.chat.id,
+                    initialMessage.message_id,
+                    null,
+                    `✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
+                    {parse_mode: 'HTML'}
+                ).catch(err => console.error('Failed to update message with short URL:', err));
+            });
 
             await logger.command(
                 ctx.from.id,
@@ -351,13 +354,16 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             
-            
-            const responseMessage = [
-                `✅ Stored ${files.length} files!`,
-                `🔗 Original URL: <code>${retrievalLink}</code>`
-            ].join('\n');
-        
-            await ctx.reply(responseMessage, {parse_mode: 'HTML'});
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
+            get2short(retrievalLink, uniqueId).then(shortUrl =>{
+                ctx.telegram.editMessageText(
+                    ctx.chat.id,
+                    initialMessage.message_id,
+                    null,
+                    `✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
+                    {parse_mode: 'HTML'}
+                ).catch(err => console.error('Failed to update message with short URL:', err));
+            });
 
             await logger.command(
                 ctx.from.id,
