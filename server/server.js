@@ -205,6 +205,27 @@ const checkChannelMembership = async (ctx, userId) => {
     }
 };
 
+app.get('/r/:uniqueId', async (req, res) => {
+    try {
+        const { uniqueId } = req.params;
+        
+        // Look up the file in MongoDB using unique_id
+        const file = await File.findOne({ unique_id: uniqueId });
+        
+        if (file) {
+            // If found, redirect to the bot with the start parameter
+            const botUsername = process.env.BOT_USERNAME || ctx.botInfo.username;
+            return res.redirect(`https://t.me/${botUsername}?start=${uniqueId}`);
+        } else {
+            // If not found, return a 404 message
+            return res.status(404).send('Invalid or expired link');
+        }
+    } catch (error) {
+        console.error('Redirect error:', error);
+        return res.status(500).send('Server error');
+    }
+});
+
 bot.command(['link', 'sl'], isAdmin, async (ctx) => {
     try {
         const args = ctx.message.text.split(' ').slice(1);
@@ -239,13 +260,14 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
 
         if (stored) {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
-            const initialMessage = await ctx.reply(`✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
-            get2short(retrievalLink, uniqueId).then(shortUrl =>{
+            const universelUrl = `https://right-addy-esorg-ed90515e.koyeb.app/r/${uniqueId}`
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code> \n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
+            get2short(universelUrl, uniqueId).then(shortUrl =>{
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,
                     null,
-                    `✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
+                    `✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
                     {parse_mode: 'HTML'}
                 ).catch(err => console.error('Failed to update message with short URL:', err));
             });
@@ -353,14 +375,15 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             await File.insertMany(files);
             
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
+            const universelUrl = `https://right-addy-esorg-ed90515e.koyeb.app/r/${uniqueId}`
             
-            const initialMessage = await ctx.reply(`✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
-            get2short(retrievalLink, uniqueId).then(shortUrl =>{
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code> \n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
+            get2short(universelUrl, uniqueId).then(shortUrl =>{
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,
                     null,
-                    `✅ File stored successfully!\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
+                    `✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
                     {parse_mode: 'HTML'}
                 ).catch(err => console.error('Failed to update message with short URL:', err));
             });
