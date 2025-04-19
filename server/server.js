@@ -15,7 +15,7 @@ const setupPostCommand = require('./post/post');
 const config = require('./config');
 const setupTVPostCommand = require('./post/tvpost');
 const {FORCE_CHANNELS} = require('./plugins/force');
-const get2short = require('./plugins/get2short');
+const shrinkme = require('./plugins/urlShorten');
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
@@ -262,7 +262,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             const universelUrl = `https://${config.REDIRECT_DOMAIN}/pirecykings/${uniqueId}`
             const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code> \n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
-            get2short(universelUrl, uniqueId).then(shortUrl =>{
+            shrinkme(universelUrl, uniqueId).then(shortUrl =>{
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,
@@ -378,7 +378,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             const universelUrl = `https://${config.REDIRECT_DOMAIN}/pirecykings/${uniqueId}`
             
             const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
-            get2short(universelUrl, uniqueId).then(shortUrl =>{
+            shrinkme(universelUrl, uniqueId).then(shortUrl =>{
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,

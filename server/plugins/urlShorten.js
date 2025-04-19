@@ -1,12 +1,12 @@
 const config = require('../config');
 const axios = require('axios');
 
-const get2short = async (originalUrl, uniqueId) => {
-    const aliasMsg = `PirecyKings${uniqueId}`;
+const shrinkme = async (originalUrl, uniqueId) => {
+    const aliasMsg = `pirecykings${uniqueId}`;
     try {
-        const respose = await axios.get("https://get2short.com/api", {
+        const respose = await axios.get("https://shrinkme.io/api", {
             params:{
-                api: config.GET2SHORT_API,
+                api: config.SHRINKME_API,
                 url: originalUrl,
                 alias: aliasMsg,
             }
@@ -19,4 +19,4 @@ const get2short = async (originalUrl, uniqueId) => {
     }
 };
 
-module.exports = get2short;
+module.exports = shrinkme;
