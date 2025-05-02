@@ -173,8 +173,8 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 
             // Validate season links format
             for (const seasonLink of seasonLinks) {
-                if (!seasonLink.includes('-')) {
-                    return ctx.reply(`Invalid format for '${seasonLink}'. Please use 'Season X - link' format.`);
+                if (!seasonLink.includes('=')) {
+                    return ctx.reply(`Invalid format for '${seasonLink}'. Please use 'Season X = link' format.`);
                 }
             }
 
