@@ -90,13 +90,19 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 <b>@Teamxpirates</b>
 <blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
 
-        // Create buttons for each season link
         const buttons = seasonLinks.map(seasonLink => {
-            const [buttonText, link] = seasonLink.trim().split('-').map(item => item.trim());
+            const lastDashIndex = seasonLink.lastDashIndex('-');
+
+            if(lastDashIndex===-1){
+                return Markup.button.url("Season Link", seasonLink.trim());
+            }
+
+            const buttonText = seasonLink.substring(0, lastDashIndex).trim();
+            const link = seasonLink.substring(lastDashIndex + 1).trim();
+
             return Markup.button.url(buttonText, link);
         });
 
-        // Create rows of buttons with maximum 2 buttons per row
         const buttonRows = [];
         for (let i = 0; i < buttons.length; i += 2) {
             const row = buttons.slice(i, i + 2);
