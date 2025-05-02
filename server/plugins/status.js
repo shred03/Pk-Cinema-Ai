@@ -243,7 +243,7 @@ const generateStatusHTML = (status) => {
         </head>
         <body>
             <div class="container">
-                <h1 class="mb-4">Bot Status Dashboard</h1>
+                <h1 class="mb-4">PK Cinema Bot Status Dashboard</h1>
                 <p class="text-muted">Last updated: ${status.istTimestamp}</p>
                 
                 <div class="row">
@@ -325,7 +325,7 @@ const generateStatusHTML = (status) => {
                 </div>
                 
                 <footer class="mt-4 text-center text-muted">
-                    <p>Bot Status Dashboard &copy; ${new Date().getFullYear()}</p>
+                    <p>PK Cinema Bot Status Dashboard &copy; ${new Date().getFullYear()}</p>
                 </footer>
             </div>
         </body>
