@@ -91,9 +91,9 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 <blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
 
         const buttons = seasonLinks.map(seasonLink => {
-            const lastDashIndex = seasonLink.lastDashIndex('-');
+            const lastDashIndex = seasonLink.lastIndexOf('-');
 
-            if(lastDashIndex===-1){
+            if(lastDashIndex === -1){
                 return Markup.button.url("Season Link", seasonLink.trim());
             }
 
