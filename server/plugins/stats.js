@@ -85,7 +85,7 @@ module.exports = function setupStats(bot, logger) {
 
             await logger.command(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Stats command',
                 'SUCCESS',
                 'Advanced stats displayed'
@@ -93,7 +93,7 @@ module.exports = function setupStats(bot, logger) {
         } catch (error) {
             await logger.error(
                 ctx.from.id,
-                ctx.from.username || 'Unknown',
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
                 'Stats command',
                 'FAILED',
                 error.message

@@ -16,6 +16,10 @@ const config = require('./config');
 const setupTVPostCommand = require('./post/tvpost');
 const {FORCE_CHANNELS} = require('./plugins/force');
 const shrinkme = require('./plugins/urlShorten');
+const mainKeyboard = require('./helper/keyboard');
+const {extractMessageInfo} = require('./helper/messageInfo');
+const {getFileDataFromMessage} = require('./helper/getFileDataMessage');
+const setupRoutes = require('./plugins/setupRoutes');
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
@@ -37,15 +41,9 @@ setupBroadcast(bot, logger);
 setupStats(bot, logger)
 setupPostCommand(bot, logger, ADMIN_IDS);
 setupTVPostCommand(bot, logger, ADMIN_IDS);
+app.use(express.json());
 
-const mainKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🏠 Home', 'home')],
-    [
-        Markup.button.callback('📌Join Channels', 'join_channels'),
-        Markup.button.callback('ℹ️ About', 'about')
-    ],
-    [Markup.button.callback('📋 Commands', 'commands')],
-]);
+setupRoutes(app);
 
 const isAdmin = async (ctx, next) => {
     if (!ADMIN_IDS.includes(ctx.from.id)) {
@@ -55,29 +53,6 @@ const isAdmin = async (ctx, next) => {
 };
 
 const generateUniqueId = () => crypto.randomBytes(8).toString('hex');
-
-const extractMessageInfo = (link) => {
-    try {
-        const url = new URL(link);
-        const pathParts = url.pathname.split('/').filter(p => p !== '');
-        
-        // Handle numeric channel IDs (e.g., https://t.me/c/1234567890/123)
-        if (pathParts[0] === 'c' && pathParts.length >= 3) {
-            const channelId = `-100${pathParts[1]}`;
-            const messageId = parseInt(pathParts[2]);
-            return { channelId, messageId };
-        }
-        // Handle username-based links (e.g., https://t.me/my_channel/123)
-        else if (pathParts.length >= 2) {
-            const username = pathParts[0];
-            const messageId = parseInt(pathParts[1]);
-            return { username, messageId };
-        }
-        return null;
-    } catch (error) {
-        return null;
-    }
-};
 
 const resolveChannelId = async (ctx, identifier) => {
     try {
@@ -108,47 +83,6 @@ const getMessageFromChannel = async (ctx, channelIdOrUsername, messageId) => {
     }
 };
 
-const getFileDataFromMessage = (message) => {
-    const originalCaption = message.caption || '';
-    
-    if (message.document) {
-        return {
-            file_name: message.document.file_name,
-            file_id: message.document.file_id,
-            file_type: 'document',
-            original_caption: originalCaption
-        };
-    } else if (message.photo) {
-        return {
-            file_name: 'photo.jpg',
-            file_id: message.photo[message.photo.length - 1].file_id,
-            file_type: 'photo',
-            original_caption: originalCaption
-        };
-    } else if (message.video) {
-        return {
-            file_name: message.video.file_name || 'video.mp4',
-            file_id: message.video.file_id,
-            file_type: 'video',
-            original_caption: originalCaption
-        };
-    } else if (message.animation) {
-        return {
-            file_name: 'animation.gif',
-            file_id: message.animation.file_id,
-            file_type: 'animation',
-            original_caption: originalCaption
-        };
-    } else if (message.sticker) {
-        return {
-            file_name: 'sticker.webp',
-            file_id: message.sticker.file_id,
-            file_type: 'sticker',
-            original_caption: originalCaption
-        };
-    }
-    return null;
-};
 
 const sendFile = async (ctx, file) => {
     const caption = file.original_caption || '';
@@ -552,11 +486,12 @@ const handleMenuAction = async (ctx, action) => {
     }
 };
 
-// Menu actions
+
 bot.action('home', ctx => handleMenuAction(ctx, 'home'));
 bot.action('join_channels', ctx => handleMenuAction(ctx, 'join_channels'));
 bot.action('about', ctx => handleMenuAction(ctx, 'about'));
 bot.action('commands', ctx => handleMenuAction(ctx, 'commands'));
+
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
