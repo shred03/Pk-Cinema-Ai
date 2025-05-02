@@ -168,7 +168,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
                     'FAILED',
                     'No season links provided'
                 );
-                return ctx.reply('Please provide at least one season link in the format: Season X - link');
+                return ctx.reply('Please provide at least one season link in the format: Season X = link');
             }
 
             // Validate season links format
