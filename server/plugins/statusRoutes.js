@@ -7,6 +7,19 @@ router.get('/', async (req, res) => {
     res.send({botSatus: "Bot is Running.."});
 });
 
+router.get('/status', async (req, res) => {
+    try {
+        const statusData = await status.getStatus();
+        res.send(statusData.html);
+    } catch (error) {
+        console.error('Status route error:', error);
+        res.status(500).json({
+            error: 'Failed to get status',
+            message: error.message
+        });
+    }
+});
+
 router.get('/json', async (req, res) => {
     try {
         const statusData = await status.getStatus();
