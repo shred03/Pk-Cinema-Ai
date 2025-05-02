@@ -4,16 +4,7 @@ const status = require('./status');
 
 
 router.get('/', async (req, res) => {
-    try {
-        const statusData = await status.getStatus();
-        res.send(statusData.html);
-    } catch (error) {
-        console.error('Status route error:', error);
-        res.status(500).json({
-            error: 'Failed to get status',
-            message: error.message
-        });
-    }
+    res.send({botSatus: "Bot is Running.."});
 });
 
 router.get('/json', async (req, res) => {

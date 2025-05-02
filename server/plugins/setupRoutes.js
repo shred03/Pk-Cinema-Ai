@@ -11,6 +11,8 @@ const setupStatus = (app) => {
             timestamp: new Date().toISOString()
         });
     });
+
+    app.use('/', statusRoutes);
 };
 
 module.exports = setupStatus;
