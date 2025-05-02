@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --no-deprecation server/server.js",
+    "start": "node --no-deprecation server/server.js",
+    "dev": "nodemon --no-deprecation server/server.js",
     "build": "npm install"
   },
   "keywords": [],
