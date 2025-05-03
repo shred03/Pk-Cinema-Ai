@@ -62,7 +62,7 @@ const resolveChannelId = async (ctx, identifier) => {
         }
         return identifier;
     } catch (error) {
-        console.error('Channel resolution error:', error);
+        console.error('Error from resolveChannelId:', error);
         return null;
     }
 };
@@ -78,7 +78,7 @@ const getMessageFromChannel = async (ctx, channelIdOrUsername, messageId) => {
         await ctx.telegram.deleteMessage(ctx.chat.id, forwardedMsg.message_id);
         return forwardedMsg;
     } catch (error) {
-        console.error('Error getting message:', error);
+        console.error('Error from getMessageFromChannel:', error);
         return null;
     }
 };
@@ -129,7 +129,7 @@ const checkChannelMembership = async (ctx, userId) => {
                 }
             } catch (error) {
                 console.error(`Error checking membership for channel ${channel.id}:`, error);
-                return false; // Assume failure means the user isn't a member
+                return false;
             }
         }
         return true; // If loop completes, user is a member of all channels
@@ -222,7 +222,7 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
             'FAILED',
             error.message
         );
-        console.error('Error storing file from link:', error);
+        console.error('Error storing file from link:');
         await ctx.reply('Error storing file. Please check if the link is from an allowed channel.');
     }
 });
@@ -292,7 +292,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
                     }
                     await ctx.telegram.deleteMessage(ctx.chat.id, message.message_id);
                 } catch (error) {
-                    console.error(`Error processing message ${msgId}:`, error);
+                    console.error(`Message ${msgId} not found, skipping`);
                 }
             }));
 
@@ -319,7 +319,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
                     null,
                     `✅ File stored successfully!\n🔗 Universel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
                     {parse_mode: 'HTML'}
-                ).catch(err => console.error('Failed to update message with short URL:', err));
+                ).catch(err => console.error('Failed to update message with short URL:'));
             });
 
             await logger.command(
@@ -403,7 +403,7 @@ bot.command('start', async (ctx) => {
                         sentMessages.push(sentMessage.message_id);
                     }
                 } catch (error) {
-                    console.error(`Error sending file ${file.file_name}:`, error);
+                    console.error(`Error sending file ${file.file_name}:`);
                 }
             }
 
@@ -422,7 +422,7 @@ bot.command('start', async (ctx) => {
 
                         await ctx.reply(fileDeleteWarningMsg, {parse_mode: 'HTML'});
                     } catch (error) {
-                        console.error('Auto-delete error:', error);
+                        console.error('Auto-delete error:');
                     }
                 }, DELETE_MINUTES * 60 * 1000);
             }
@@ -465,7 +465,7 @@ bot.action(/^check_join_(.+)/, async (ctx) => {
             await ctx.telegram.sendMessage(ctx.chat.id, `/start ${uniqueId}`);
         }
     } catch (error) {
-        console.error('Error verifying membership:', error);
+        console.error('Error verifying membership:');
         await ctx.answerCbQuery('Error verifying channel membership.');
     }
 });
@@ -503,7 +503,7 @@ const startBot = async () => {
         await bot.launch();
         console.log('✅ Bot is running...');
     } catch (error) {
-        console.error('❌ Error starting bot:', error);
+        console.error('❌ Error starting bot:');
     }
 };
 
