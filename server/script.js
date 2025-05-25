@@ -46,10 +46,6 @@ const descriptions = {
 • /lstats - View current limit stats.
 • /rsl <userid> - Reset limit stats single or all user.
 
-
-👤 User Commands:
-• /start - Start the bot
-
 *𝘕𝘰𝘵𝘦: 𝘈𝘭𝘭 𝘤𝘰𝘮𝘮𝘢𝘯𝘥𝘴 𝘢𝘳𝘦 𝘸𝘰𝘳𝘬𝘪𝘯𝘨* ✅
 `
 };
