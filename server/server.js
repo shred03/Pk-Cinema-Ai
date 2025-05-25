@@ -14,16 +14,21 @@ const setupStats = require('./plugins/stats')
 const setupPostCommand = require('./post/post');
 const config = require('./config');
 const setupTVPostCommand = require('./post/tvpost');
-const {FORCE_CHANNELS} = require('./plugins/force');
+const { FORCE_CHANNELS } = require('./plugins/force');
 const shrinkme = require('./plugins/urlShorten');
 const mainKeyboard = require('./helper/keyboard');
-const {extractMessageInfo} = require('./helper/messageInfo');
-const {getFileDataFromMessage} = require('./helper/getFileDataMessage');
+const { extractMessageInfo } = require('./helper/messageInfo');
+const { getFileDataFromMessage } = require('./helper/getFileDataMessage');
 const setupRoutes = require('./plugins/setupRoutes');
+const verificationSystem = require('./plugins/verification');
+const setupVerificationRoutes = require('./plugins/verificationRoutes');
+const {handleMenuAction, setInitialMenuState } = require("./helper/menuHandler");
+const fileRetrievalLimitSystem = require('./plugins/fileRetrievalLimit');
+
 
 const DATABASE_NAME = process.env.DATABASE_NAME
 
-mongoose.connect(process.env.MONGODB_URI,{
+mongoose.connect(process.env.MONGODB_URI, {
     dbName: DATABASE_NAME,
     retryWrites: true,
     w: 'majority'
@@ -42,8 +47,8 @@ setupStats(bot, logger)
 setupPostCommand(bot, logger, ADMIN_IDS);
 setupTVPostCommand(bot, logger, ADMIN_IDS);
 app.use(express.json());
-
 setupRoutes(app);
+setupVerificationRoutes(app);
 
 const isAdmin = async (ctx, next) => {
     if (!ADMIN_IDS.includes(ctx.from.id)) {
@@ -142,10 +147,10 @@ const checkChannelMembership = async (ctx, userId) => {
 app.get('/pirecykings/:uniqueId', async (req, res) => {
     try {
         const { uniqueId } = req.params;
-        
+
         // Look up the file in MongoDB using unique_id
         const file = await File.findOne({ unique_id: uniqueId });
-        
+
         if (file) {
             // If found, redirect to the bot with the start parameter
             const botUsername = config.BOT_USERNAME || ctx.botInfo.username;
@@ -178,10 +183,9 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
         const messageInfo = extractMessageInfo(args[0]);
         if (!messageInfo) return ctx.reply('Invalid message link format.');
 
-        // Resolve channel identifier
         const channelIdentifier = messageInfo.channelId || `@${messageInfo.username}`;
         const targetChannelId = await resolveChannelId(ctx, channelIdentifier);
-        
+
         if (!targetChannelId || !DATABASE_FILE_CHANNELS.includes(targetChannelId)) {
             return ctx.reply('❌ This channel is not allowed for file storage.');
         }
@@ -195,14 +199,14 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
         if (stored) {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             const universelUrl = `https://${config.REDIRECT_DOMAIN}/pirecykings/${uniqueId}`
-            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code> \n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
-            shrinkme(universelUrl, uniqueId).then(shortUrl =>{
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code> \n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, { parse_mode: 'HTML' });
+            shrinkme(universelUrl, uniqueId).then(shortUrl => {
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,
                     null,
                     `✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
-                    {parse_mode: 'HTML'}
+                    { parse_mode: 'HTML' }
                 ).catch(err => console.error('Failed to update message with short URL:', err));
             });
 
@@ -235,30 +239,26 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             return ctx.reply('Format: /batch https://t.me/c/xxxxx/123 https://t.me/c/xxxxx/128');
         }
 
-        // Extract message info from both links
         const startInfo = extractMessageInfo(args[0]);
         const endInfo = extractMessageInfo(args[1]);
         if (!startInfo || !endInfo) return ctx.reply('Invalid message links.');
 
-        // Resolve channel IDs
         const startChannelId = await resolveChannelId(ctx, startInfo.channelId || `@${startInfo.username}`);
         const endChannelId = await resolveChannelId(ctx, endInfo.channelId || `@${endInfo.username}`);
-        
-        // Validate channels
+
         if (!startChannelId || !endChannelId) return ctx.reply('Invalid channel in links.');
         if (startChannelId !== endChannelId) return ctx.reply('Both links must be from the same channel.');
         if (!DATABASE_FILE_CHANNELS.includes(startChannelId)) {
             return ctx.reply('❌ This channel is not allowed for file storage.');
         }
 
-        // Validate message range
         if (endInfo.messageId < startInfo.messageId || endInfo.messageId - startInfo.messageId > 100) {
             return ctx.reply('Invalid range. Maximum range is 100 messages.');
         }
 
         const uniqueId = generateUniqueId();
         const progressMsg = await ctx.reply('Processing messages...');
-        
+
         const messageIds = Array.from(
             { length: endInfo.messageId - startInfo.messageId + 1 },
             (_, i) => startInfo.messageId + i
@@ -266,7 +266,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
 
         const BATCH_SIZE = 10;
         const files = [];
-        
+
         for (let i = 0; i < messageIds.length; i += BATCH_SIZE) {
             const batch = messageIds.slice(i, i + BATCH_SIZE);
             await Promise.all(batch.map(async (msgId) => {
@@ -277,7 +277,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
                         msgId,
                         { disable_notification: true }
                     );
-                    
+
                     if (message) {
                         const fileData = getFileDataFromMessage(message);
                         if (fileData) {
@@ -305,20 +305,20 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
         }
 
         if (files.length > 0) {
-            // Save all files to database
-            await File.insertMany(files);
             
+            await File.insertMany(files);
+
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             const universelUrl = `https://${config.REDIRECT_DOMAIN}/pirecykings/${uniqueId}`
-            
-            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, {parse_mode: 'HTML'});
-            shrinkme(universelUrl, uniqueId).then(shortUrl =>{
+
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, { parse_mode: 'HTML' });
+            shrinkme(universelUrl, uniqueId).then(shortUrl => {
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,
                     null,
                     `✅ File stored successfully!\n🔗 Universel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
-                    {parse_mode: 'HTML'}
+                    { parse_mode: 'HTML' }
                 ).catch(err => console.error('Failed to update message with short URL:'));
             });
 
@@ -331,12 +331,175 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             );
         }
         await ctx.telegram.deleteMessage(ctx.chat.id, progressMsg.message_id);
-        
+
     } catch (error) {
         await logger.error(ctx.from.id, ctx.from.username || 'Unknown', 'Batch command', 'FAILED', error.message);
         await ctx.reply('Error processing files. Please try again.');
     }
 });
+
+bot.command('token', isAdmin, async (ctx) => {
+    try {
+        const status = verificationSystem.toggleVerification();
+        const statusText = status ? 'ENABLED ✅' : 'DISABLED ❌';
+
+        await ctx.reply(`🔐 **Verification System ${statusText}**\n\n` +
+            `Status: Verification is now **${statusText.toLowerCase()}**\n\n` +
+            `${status ? '• Users will need to verify before accessing files\n• Verification lasts for 12 hours' : '• Users can access files directly\n• No verification required'}`,
+            { parse_mode: 'Markdown' }
+        );
+
+        await logger.command(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'Token command used',
+            'SUCCESS',
+            `Verification system ${statusText}`
+        );
+    } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'Token command used',
+            'FAILED',
+            error.message
+        );
+        await ctx.reply('❌ Error toggling verification system.');
+    }
+});
+
+bot.command(['filelimit', 'filel'], isAdmin, async (ctx) => {
+    try {
+        const status = fileRetrievalLimitSystem.toggleSystem();
+        const statusText = status ? 'ENABLED ✅' : 'DISABLED ❌';
+
+        await ctx.reply(`📊 **File Retrieval Limit System ${statusText}**\n\n` +
+            `Status: System is now **${statusText.toLowerCase()}**\n\n` +
+            `${status ? 
+                `• Users limited to ${fileRetrievalLimitSystem.getFileLimit()} files per cycle\n• Verification required after limit reached\n• Limits reset every 24 hours` : 
+                '• Users can retrieve unlimited files\n• No file count tracking'
+            }`,
+            { parse_mode: 'Markdown' }
+        );
+
+        await logger.command(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'File limit command used',
+            'SUCCESS',
+            `File retrieval limit system ${statusText}`
+        );
+    } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'File limit command used',
+            'FAILED',
+            error.message
+        );
+        await ctx.reply('❌ Error toggling file retrieval limit system.');
+    }
+});
+
+bot.command(['setlimit', 'setl'], isAdmin, async (ctx) => {
+    try {
+        const args = ctx.message.text.split(' ').slice(1);
+        if (args.length === 0) {
+            return ctx.reply(`Current file limit: ${fileRetrievalLimitSystem.getFileLimit()} files per cycle\n\nUsage: /setlimit <number>`);
+        }
+
+        const limit = parseInt(args[0]);
+        if (isNaN(limit) || limit < 1) {
+            return ctx.reply('❌ Please provide a valid number (minimum 1)');
+        }
+
+        const newLimit = fileRetrievalLimitSystem.setFileLimit(limit);
+        await ctx.reply(`✅ File limit updated to ${newLimit} files per cycle`, { parse_mode: 'Markdown' });
+
+        await logger.command(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'Set limit command used',
+            'SUCCESS',
+            `File limit set to ${newLimit}`
+        );
+    } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'Set limit command used',
+            'FAILED',
+            error.message
+        );
+        await ctx.reply('❌ Error setting file limit.');
+    }
+});
+
+bot.command(['limitstats', 'lstats'], isAdmin, async (ctx) => {
+    try {
+        const stats = await fileRetrievalLimitSystem.getSystemStats();
+        if (!stats) {
+            return ctx.reply('❌ Failed to retrieve system statistics.');
+        }
+
+        const statusText = stats.systemEnabled ? 'ENABLED ✅' : 'DISABLED ❌';
+        
+        await ctx.reply(
+            `📊 **File Retrieval Limit Statistics**\n\n` +
+            `🔧 **System Status:** ${statusText}\n` +
+            `📈 **File Limit:** ${stats.currentFileLimit} files per cycle\n\n` +
+            `👥 **User Statistics:**\n` +
+            `• Total Users: ${stats.totalUsers}\n` +
+            `• Users Needing Verification: ${stats.usersNeedingVerification}\n` +
+            `• Average Files Retrieved: ${Math.round(stats.averageFilesRetrieved)}\n\n` +
+            `⏰ Limits reset every 24 hours`,
+            { parse_mode: 'Markdown' }
+        );
+    } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'Limit stats command used',
+            'FAILED',
+            error.message
+        );
+        await ctx.reply('❌ Error retrieving statistics.');
+    }
+});
+
+bot.command(['resetlimits', 'rsl'], isAdmin, async (ctx) => {
+    try {
+        const args = ctx.message.text.split(' ').slice(1);
+        const userId = args[0] ? parseInt(args[0]) : null;
+
+        const result = await fileRetrievalLimitSystem.resetUserLimits(userId);
+        
+        if (result.success) {
+            await ctx.reply(`✅ ${result.message}`, { parse_mode: 'Markdown' });
+            await logger.command(
+                ctx.from.id,
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+                'Reset limits command used',
+                'SUCCESS',
+                result.message
+            );
+        } else {
+            await ctx.reply(`❌ Failed to reset limits: ${result.error}`);
+        }
+    } catch (error) {
+        await logger.error(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
+            'Reset limits command used',
+            'FAILED',
+            error.message
+        );
+        await ctx.reply('❌ Error resetting user limits.');
+    }
+});
+
+// Update the verification success handling in server.js
+// Replace the existing verification success handling section with this:
 
 bot.command('start', async (ctx) => {
     try {
@@ -352,29 +515,85 @@ bot.command('start', async (ctx) => {
         );
 
         const uniqueId = ctx.message.text.split(' ')[1];
+    
+        if (uniqueId && uniqueId.startsWith('verify_')) {
+            const token = uniqueId.replace('verify_', '');
+            const result = await verificationSystem.verifyUserByToken(token);
 
+            if (result.success) {               
+                if (result.context === 'limit_exceeded') {                    
+                    // UPDATED: Pass the context to handleVerificationSuccess
+                    await fileRetrievalLimitSystem.handleVerificationSuccess(result.userId, 'limit_exceeded');
+                    
+                    await ctx.reply(`✅ **Verification Successful!**\n\n` +
+                        `Your file retrieval limit has been reset. You can now access files again.\n\n` +
+                        `${result.uniqueId ? `Use this link to get your files: /start ${result.uniqueId}` : 'You can now access files normally.'}`,
+                        { parse_mode: 'Markdown' }
+                    );                    
+                   
+                    if (result.uniqueId) {
+                        setTimeout(async () => {
+                            await ctx.telegram.sendMessage(ctx.chat.id, `/start ${result.uniqueId}`);
+                        }, 1000);
+                    }
+                } else {
+                    // UPDATED: Pass the context to handleVerificationSuccess  
+                    await fileRetrievalLimitSystem.handleVerificationSuccess(result.userId, 'general');
+                    
+                    await ctx.reply(`✅ **Verification Successful!**\n\n` +
+                        `${result.message}\n\n` +
+                        `You can now access files by using the original file link.`,
+                        { parse_mode: 'Markdown' }
+                    );
+                }
+            } else {
+                await ctx.reply(`❌ **Verification Failed**\n\n` +
+                    `${result.message}\n\n` +
+                    `Please request a new verification link.`,
+                    { parse_mode: 'Markdown' }
+                );
+            }
+            return;
+        }
+
+        // Rest of the start command remains the same...
         if (uniqueId) {
             const files = await File.find({ unique_id: uniqueId }).sort({ message_id: 1 });
             if (!files.length) return ctx.reply('Files not found.');
 
             if (!ADMIN_IDS.includes(ctx.from.id)) {
+            
                 const isMember = await checkChannelMembership(ctx, ctx.from.id);
                 if (!isMember) {
-                    // Create buttons for all channels
-                    const channelButtons = FORCE_CHANNELS.map(channel => 
+                    const channelButtons = FORCE_CHANNELS.map(channel =>
                         Markup.button.url(`Join ${channel.name}`, `https://t.me/${channel.username}`)
                     );
-                    
-                    // Add the check button at the end
+
                     channelButtons.push(Markup.button.callback('✅ I\'ve Joined', `check_join_${uniqueId}`));
-                    
+
                     const joinKeyboard = Markup.inlineKeyboard(
-                        // Arrange buttons in rows of 1 or 2 depending on your preference
                         channelButtons.map(button => [button])
                     );
-                    
+
                     await ctx.reply('😊 To access the files, please join of our channels:', joinKeyboard);
                     return;
+                }
+               
+                if (fileRetrievalLimitSystem.isSystemEnabled()) {
+                    const limitCheck = await fileRetrievalLimitSystem.checkRetrievalLimit(ctx.from.id);
+                    
+                    if (!limitCheck.allowed && limitCheck.needsVerification) {
+                        await fileRetrievalLimitSystem.handleLimitExceeded(ctx, uniqueId, limitCheck);
+                        return;
+                    }
+                }
+
+                if (verificationSystem.isVerificationEnabled()) {
+                    const isVerified = await verificationSystem.isUserVerified(ctx.from.id);
+                    if (!isVerified) {
+                        await verificationSystem.sendVerificationRequest(ctx, uniqueId, ctx.botInfo.username, 'general');
+                        return;
+                    }
                 }
             }
 
@@ -390,12 +609,7 @@ bot.command('start', async (ctx) => {
 
             let sendingMsg = await ctx.reply(`⌛️ Sending ${files.length} file(s)...`);
             const sentMessages = [];
-
-            if (AUTO_DELETE) {
-                const warningMsg = await ctx.reply(`⚠️ Warning! These files will be automatically deleted in ${DELETE_MINUTES} minutes. Forward them now to keep copies!`);
-                sentMessages.push(warningMsg.message_id);
-            }
-
+            
             for (const file of files) {
                 try {
                     const sentMessage = await sendFile(ctx, file);
@@ -406,11 +620,21 @@ bot.command('start', async (ctx) => {
                     console.error(`Error sending file ${file.file_name}:`);
                 }
             }
-
             await ctx.telegram.deleteMessage(ctx.chat.id, sendingMsg.message_id);
             const completionMsg = await ctx.reply('✅ All files sent!');
             sentMessages.push(completionMsg.message_id);
-
+            if (AUTO_DELETE) {
+                const warningMsg = await ctx.reply(`⚠️ Warning! These files will be automatically deleted in ${DELETE_MINUTES} minutes. Forward them now to keep copies!`);
+                sentMessages.push(warningMsg.message_id);
+            }
+            
+            if (!ADMIN_IDS.includes(ctx.from.id) && fileRetrievalLimitSystem.isSystemEnabled()) {
+                await fileRetrievalLimitSystem.updateFileRetrievalCount(ctx.from.id, files.length);
+                const userStats = await fileRetrievalLimitSystem.getUserStats(ctx.from.id);
+                if (userStats && userStats.remainingFiles > 0) {
+                    await ctx.reply(`📊 You have ${userStats.remainingFiles} file retrievals remaining in this cycle.`);
+                }
+            }
             if (AUTO_DELETE) {
                 setTimeout(async () => {
                     try {
@@ -419,8 +643,7 @@ bot.command('start', async (ctx) => {
                         }
 
                         const fileDeleteWarningMsg = '<blockquote>🗑️ Files have been automatically deleted.</blockquote>';
-
-                        await ctx.reply(fileDeleteWarningMsg, {parse_mode: 'HTML'});
+                        await ctx.reply(fileDeleteWarningMsg, { parse_mode: 'HTML' });
                     } catch (error) {
                         console.error('Auto-delete error:');
                     }
@@ -439,6 +662,7 @@ bot.command('start', async (ctx) => {
                 parse_mode: 'Markdown',
                 ...mainKeyboard
             });
+            setInitialMenuState(ctx.from.id, 'home');
         }
     } catch (error) {
         await logger.error(
@@ -461,7 +685,7 @@ bot.action(/^check_join_(.+)/, async (ctx) => {
         } else {
             await ctx.deleteMessage();
             await ctx.reply(`😍 Thank you for joining! Now send below message to retrieve your files...`);
-            // Trigger the start command with the uniqueId to send the files
+            
             await ctx.telegram.sendMessage(ctx.chat.id, `/start ${uniqueId}`);
         }
     } catch (error) {
@@ -470,27 +694,30 @@ bot.action(/^check_join_(.+)/, async (ctx) => {
     }
 });
 
-// Helper function for menu actions
-const handleMenuAction = async (ctx, action) => {
+bot.action(/^verify_check_(.+)/, async (ctx) => {
+    const uniqueId = ctx.match[1];
     try {
-        const caption = action === 'home' 
-            ? `Hello ${ctx.from.first_name}\n\n${descriptions[action]}`
-            : descriptions[action];
-            
-        await ctx.editMessageCaption(caption, {
-            parse_mode: 'Markdown',
-            ...mainKeyboard
-        });
+        const isVerified = await verificationSystem.isUserVerified(ctx.from.id);
+        
+        if (!isVerified) {
+            await ctx.answerCbQuery('❌ Please complete verification first by clicking the verification link.');
+            return;
+        }
+
+        await ctx.answerCbQuery('✅ Verification confirmed!');
+        await ctx.deleteMessage();
+        
+        await ctx.telegram.sendMessage(ctx.chat.id, `/start ${uniqueId}`);
     } catch (error) {
-        console.error(`Error handling ${action} button:`, error);
+        console.error('Error handling verification check:', error);
+        await ctx.answerCbQuery('❌ Error checking verification status.');
     }
-};
+});
 
-
-bot.action('home', ctx => handleMenuAction(ctx, 'home'));
-bot.action('join_channels', ctx => handleMenuAction(ctx, 'join_channels'));
-bot.action('about', ctx => handleMenuAction(ctx, 'about'));
-bot.action('commands', ctx => handleMenuAction(ctx, 'commands'));
+bot.action('home', ctx => handleMenuAction(ctx, 'home', descriptions, mainKeyboard));
+bot.action('join_channels', ctx => handleMenuAction(ctx, 'join_channels', descriptions, mainKeyboard));
+bot.action('about', ctx => handleMenuAction(ctx, 'about', descriptions, mainKeyboard));
+bot.action('commands', ctx => handleMenuAction(ctx, 'commands', descriptions, mainKeyboard));
 
 
 const PORT = process.env.PORT || 8000;
@@ -507,8 +734,12 @@ const startBot = async () => {
     }
 };
 
+setInterval(() => {
+    verificationSystem.cleanupExpiredVerifications();
+}, 60 * 60 * 1000);
+
 startBot();
 
-// Enable graceful stop
+
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));

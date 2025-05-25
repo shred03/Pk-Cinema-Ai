@@ -40,6 +40,11 @@ const descriptions = {
 • /setchannel channelId - Set Channel Where Post Will Go.
 • /tvpost series_name link - Create Post Direclty
 • /setsticker or /sc channelId/username - Set Channel Where Post Will Go.
+• /token - Enable & disable token verification for file access
+• /filel - Enable & disable file retrieval limit
+• /setl [number] - Set file retrieval limit
+• /lstats - View current limit stats.
+• /rsl <userid> - Reset limit stats single or all user.
 
 
 👤 User Commands:
