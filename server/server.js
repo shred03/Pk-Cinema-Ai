@@ -497,9 +497,7 @@ bot.command(['resetlimits', 'rsl'], isAdmin, async (ctx) => {
         await ctx.reply('❌ Error resetting user limits.');
     }
 });
-
-// Update the verification success handling in server.js
-// Replace the existing verification success handling section with this:
+require('./helper/help')(bot);
 
 bot.command('start', async (ctx) => {
     try {
