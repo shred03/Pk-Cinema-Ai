@@ -1,8 +1,10 @@
 const config = require('../config');
 const axios = require('axios');
+const crypto = require("crypto")
 
-const shrinkme = async (originalUrl, uniqueId) => {
-    const aliasMsg = `pirecykings${uniqueId}`;
+const shrinkme = async (originalUrl) => {
+    const randomString = crypto.randomBytes(5).toString('hex');
+    const aliasMsg = `pirecykings${randomString}`;
     try {
         const respose = await axios.get("https://shrinkme.io/api", {
             params:{
