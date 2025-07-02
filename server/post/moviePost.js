@@ -266,9 +266,11 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
                 await ctx.deleteMessage()
             }, 5000);
 
-            const commandText = ctx.message.text.substring(8).trim();
+            const commandText = ctx.message.text.replace(/^\/post\s+/i, '');
+            const parts = commandText.split('|').map(p => p.trim());
+            const movieName = parts.shift();
 
-            if (!commandText.includes('|')) {
+            if (!movieName || parts.length === 0) {
                 await logger.command(
                     ctx.from.id,
                     `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})` || 'Unknown',
@@ -278,10 +280,7 @@ const setupPostCommand = (bot, logger, ADMIN_IDS) => {
                 );
                 return ctx.reply('Please use the format: /post Movie_Name | Button 1 = link1 | Button 2 = link2 | ...\n\n*Note: You can use "placeholder" as link value to add links later dynamically*');
             }
-
-            const parts = commandText.split('|').map(part => part.trim());
-            const movieName = parts[0];
-            const downloadLinks = parts.slice(1);
+            const downloadLinks = parts;
 
             if (downloadLinks.length === 0) {
                 await logger.command(
