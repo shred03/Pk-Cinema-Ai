@@ -63,7 +63,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
         const numberOfSeasons = seriesData.number_of_seasons || "NA";
         const episodeRuntime = seriesData.episode_run_time && seriesData.episode_run_time.length > 0 ?
             seriesData.episode_run_time[0] : "NA";
-        const episodeCounts = seriesData.seasons.map(season => season.episode_count).join("/");
+        const episodeCounts = seriesData.seasons.map(season => season.episode_count).join("-");
 
         function formatRuntime(minutes) {
             if (!minutes || isNaN(minutes)) return "NA";
@@ -79,10 +79,9 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 
         const caption = `<b>${seriesData.name} (${firstAirYear})</b>
 ╭─────────────────────
-» 𝗔𝘂𝗱𝗶𝗼: Jap-Eng (ESub)
+» 𝗦𝗲𝗮𝘀𝗼𝗻: ${numberOfSeasons}
+» 𝗔𝘂𝗱𝗶𝗼: English (ESub)
 » 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p-720p-1080p
-» 𝗥𝘂𝗻𝘁𝗶𝗺𝗲: ${formattedRuntime}
-» 𝑺𝒆𝒂𝒔𝒐𝒏: ${numberOfSeasons}
 » 𝗘𝗽𝗶𝘀𝗼𝗱𝗲: ${episodeCounts}
 ├─────────────────────
 » 𝗚𝗲𝗻𝗿𝗲: ${genres}
