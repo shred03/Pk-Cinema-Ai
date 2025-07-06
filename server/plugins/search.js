@@ -275,7 +275,7 @@ const setupSearch = (bot, logger) => {
             const query = args.join(' ').trim();
             
             if (query.length < 3) {
-                await ctx.reply('❌ Search query must be at least 3 characters long.');
+                await ctx.reply('❌ Search query must be at least 3 character long.');
                 return;
             }
 
