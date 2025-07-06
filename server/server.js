@@ -24,6 +24,7 @@ const verificationSystem = require('./plugins/verification');
 const setupVerificationRoutes = require('./plugins/verificationRoutes');
 const {handleMenuAction, setInitialMenuState } = require("./helper/menuHandler");
 const fileRetrievalLimitSystem = require('./plugins/fileRetrievalLimit');
+const setupSearch = require('./plugins/search');
 
 
 const DATABASE_NAME = process.env.DATABASE_NAME
@@ -49,6 +50,7 @@ setupTVPostCommand(bot, logger, ADMIN_IDS);
 app.use(express.json());
 setupRoutes(app);
 setupVerificationRoutes(app);
+setupSearch(bot, logger);
 
 const isAdmin = async (ctx, next) => {
     if (!ADMIN_IDS.includes(ctx.from.id)) {
