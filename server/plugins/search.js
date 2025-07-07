@@ -4,7 +4,7 @@ const File = require('../models/File');
 const EXCLUDE_WORDS = ['[PK]', '[PirecyKings]', '[A14]'
 ];
 
-const AUTHORIZED_GROUPS = [-2102890038,-2311062019,-2161034243,-1798513974]
+const AUTHORIZED_GROUPS = [-1002102890038,-1002311062019,-1002161034243,-1001798513974]
 
 class SearchSystem {
     constructor() {
