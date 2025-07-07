@@ -222,7 +222,7 @@ const setupSearch = (bot, logger) => {
             const args = ctx.message.text.split(' ').slice(1);
 
             if (args.length === 0) {
-                await ctx.reply('Search format:\n<i>/search complete phrase</i>\n\nExample:\n<code>/search The Flash 2014 S01</code>\n\n💡 <i>Use complete phrases for exact matches</i>',
+                await ctx.reply('Search format:\n<i>/search file_name</i>\n\nExample:\n<code>/search Kalki 2898AD</code>\n\n<i>Use complete phrases for exact matches</i>',
                     { parse_mode: 'HTML' }
                 );
                 return;
