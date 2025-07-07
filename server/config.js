@@ -13,7 +13,8 @@ const config = {
     LOG_CHANNEL_ID: process.env.LOG_CHANNEL_ID,
     SHRINKME_API: process.env.SHRINKME_API,
     BOT_USERNAME: process.env.BOT_USERNAME,
-    REDIRECT_DOMAIN: process.env.REDIRECT_DOMAIN
+    REDIRECT_DOMAIN: process.env.REDIRECT_DOMAIN,
+    AUTH_CHATS: process.env.AUTH_CHATS
 
 }
 
