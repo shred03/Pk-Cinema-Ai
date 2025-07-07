@@ -1,19 +1,10 @@
 const { Markup } = require('telegraf');
 const File = require('../models/File');
-const config = require("../config");
 
 const EXCLUDE_WORDS = ['[PK]', '[PirecyKings]', '[A14]'
 ];
 
-const auth_chats = config.AUTH_CHATS.split(',').map(Number);
-
-const AUTHORIZED_GROUPS = auth_chats.map(id => {
-  const idStr = Math.abs(id).toString(); 
-  const sliced = idStr.slice(3);         
-  return -parseInt(sliced);            
-});
-
-console.log(AUTHORIZED_GROUPS)
+const AUTHORIZED_GROUPS = [-2102890038,-2311062019,-2161034243,-1798513974]
 
 class SearchSystem {
     constructor() {
