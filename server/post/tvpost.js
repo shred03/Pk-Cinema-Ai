@@ -77,17 +77,17 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
         }
         const formattedRuntime = formatRuntime(episodeRuntime);
 
-        const caption = `<b>${seriesData.name} (${firstAirYear})</b>
+        const caption = `✦ <b>${seriesData.name} (${firstAirYear}) -S${numberOfSeasons} </b>
 ╭─────────────────────
-» 𝗦𝗲𝗮𝘀𝗼𝗻: ${numberOfSeasons}
-» 𝗔𝘂𝗱𝗶𝗼: English (ESub)
-» 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p-720p-1080p
-» 𝗘𝗽𝗶𝘀𝗼𝗱𝗲: ${episodeCounts}
+│❯ 𝗘𝗽𝗶𝘀𝗼𝗱𝗲: ${episodeCounts}   
+│❯ 𝗥𝘂𝗻𝘁𝗶𝗺𝗲: ${formattedRuntime}
+│❯ 𝗔𝘂𝗱𝗶𝗼: Japanese (ESub)
+│❯ 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p | 720p | 1080p
 ├─────────────────────
-» 𝗚𝗲𝗻𝗿𝗲: ${genres}
+│❯ 𝗚𝗲𝗻𝗿𝗲: ${genres}
 ╰─────────────────────
     
-<b>@Teamxpirates</b>
+<blockquote><b>‣ Powered By: @Teamxpirates</b></blockquote>
 <blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
 
         // Create buttons from season links
