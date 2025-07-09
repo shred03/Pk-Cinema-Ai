@@ -149,6 +149,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
     bot.command(['tvpost'], isAdmin, async (ctx) => {
         try {
             setTimeout(async () => {
+                await ctx.deleteMessage()
             }, 5000);
 
             const commandText = ctx.message.text.substring(8).trim();

@@ -197,11 +197,19 @@ const setupSearch = (bot, logger) => {
 
 
     bot.command('chatid', (ctx) => {
+        setTimeout(async () => {
+                await ctx.deleteMessage();
+            }, 5000);
         ctx.reply(`Chat ID: ${ctx.chat.id}`);
     });
 
     bot.command('search', async (ctx) => {
         try {
+
+            setTimeout(async () => {
+                await ctx.deleteMessage();
+            }, 6000);
+
             const chatType = ctx.chat.type;
             const chatId = ctx.chat.id;
 
