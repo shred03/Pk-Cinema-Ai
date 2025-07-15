@@ -1,5 +1,5 @@
 const descriptions = {
-    welcome_image: "https://jpcdn.it/img/2f8c858a7d36bbf69575cd54223f0bd1.jpg",
+    welcome_image: "https://jpcdn.it/img/small/6c50388e9df5bbb31e8d48d8e5893c31.jpg",
     welcome_text: `Welcome to [PK 👑] Cinema Bot!`,
 
     // Home section content
