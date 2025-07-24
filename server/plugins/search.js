@@ -1,19 +1,10 @@
 const { Markup } = require('telegraf');
 const File = require('../models/File');
-const config = require("../config");
 
 const EXCLUDE_WORDS = ['[PK]', '[PirecyKings]', '[A14]'
 ];
 
-const auth_chats = config.AUTH_CHATS.split(',').map(Number);
-
-const AUTHORIZED_GROUPS = auth_chats.map(id => {
-  const idStr = Math.abs(id).toString(); 
-  const sliced = idStr.slice(3);         
-  return -parseInt(sliced);            
-});
-
-console.log(AUTHORIZED_GROUPS)
+const AUTHORIZED_GROUPS = [-1002102890038,-1002311062019,-1002161034243,-1001798513974,-1001691578341,-1001964585087]
 
 class SearchSystem {
     constructor() {
@@ -206,11 +197,19 @@ const setupSearch = (bot, logger) => {
 
 
     bot.command('chatid', (ctx) => {
+        setTimeout(async () => {
+                await ctx.deleteMessage();
+            }, 5000);
         ctx.reply(`Chat ID: ${ctx.chat.id}`);
     });
 
     bot.command('search', async (ctx) => {
         try {
+
+            setTimeout(async () => {
+                await ctx.deleteMessage();
+            }, 6000);
+
             const chatType = ctx.chat.type;
             const chatId = ctx.chat.id;
 

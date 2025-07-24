@@ -55,7 +55,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
         return genres.map(genre => genre.name).join(', ');
     };
 
-    const createTVSeriesPost = (seriesData, seasonLinks, postId = null) => {
+    const createTVSeriesPost = (seriesData, seasonLinks, postId = null, currentChannelUsername) => {
         const firstAirYear = seriesData.first_air_date ?
             new Date(seriesData.first_air_date).getFullYear() : 'N/A';
 
@@ -77,19 +77,19 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
         }
         const formattedRuntime = formatRuntime(episodeRuntime);
 
-        const caption = `<b>${seriesData.name} (${firstAirYear})</b>
-╭─────────────────────
-» 𝗦𝗲𝗮𝘀𝗼𝗻: ${numberOfSeasons}
-» 𝗔𝘂𝗱𝗶𝗼: English (ESub)
-» 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p-720p-1080p
-» 𝗘𝗽𝗶𝘀𝗼𝗱𝗲: ${episodeCounts}
+        const caption = `✦ <b>${seriesData.name} (${firstAirYear}) - S${numberOfSeasons} </b>
+┌─────────────────────
+│❯ 𝗘𝗽𝗶𝘀𝗼𝗱𝗲: ${episodeCounts}
+│❯ 𝗥𝘂𝗻𝘁𝗶𝗺𝗲: ${formattedRuntime}
+│❯ 𝗔𝘂𝗱𝗶𝗼: Japanese (ESub)
+│❯ 𝗤𝘂𝗮𝗹𝗶𝘁𝘆: 480p | 720p | 1080p
 ├─────────────────────
-» 𝗚𝗲𝗻𝗿𝗲: ${genres}
-╰─────────────────────
-    
-<b>@Teamxpirates</b>
-<blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
+│❯ 𝗚𝗲𝗻𝗿𝗲: ${genres}
+└─────────────────────
 
+<blockquote><b>‣ Join Us: ${currentChannelUsername}</b></blockquote>
+<blockquote><b>‣ Powered By: @TeamXpirates</b></blockquote>
+<blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
         // Create buttons from season links
         const buttons = seasonLinks.map((seasonLink, index) => {
             const [buttonText, link] = seasonLink.trim().split('=').map(item => item.trim());
@@ -149,6 +149,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
     bot.command(['tvpost'], isAdmin, async (ctx) => {
         try {
             setTimeout(async () => {
+                await ctx.deleteMessage()
             }, 5000);
 
             const commandText = ctx.message.text.substring(8).trim();
@@ -318,7 +319,13 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
                 updatedSeasonLinks[index] = `${seasonText} = ${newLink}`;
             }
 
-            const updatedPost = createTVSeriesPost(tvPost.seriesData, updatedSeasonLinks, postId);
+            const postSetting = await Post.getLatestForAdmin(ctx.from.id);
+
+            const channelInfo = postSetting.channelUsername ?
+                `@${postSetting.channelUsername}` :
+                postSetting.channelId;
+
+            const updatedPost = createTVSeriesPost(tvPost.seriesData, updatedSeasonLinks, postId, channelInfo);
 
             try {
                 if (tvPost.imageUrl) {
@@ -457,8 +464,13 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
             if (tvPost.adminId !== ctx.from.id) {
                 return ctx.reply('❌ You can only edit posts that you created.');
             }
+            const postSetting = await Post.getLatestForAdmin(ctx.from.id);
 
-            const post = createTVSeriesPost(tvPost.seriesData, tvPost.seasonLinks, postId);
+            const channelInfo = postSetting.channelUsername ?
+                `@${postSetting.channelUsername}` :
+                postSetting.channelId;
+
+            const post = createTVSeriesPost(tvPost.seriesData, tvPost.seasonLinks, postId, channelInfo);
             const buttons = [];
 
             tvPost.seasonLinks.forEach((seasonLink, index) => {
@@ -768,13 +780,13 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
             }
 
             const postId = `tvp${ctx.from.id}_${Date.now()}`;
-            const post = createTVSeriesPost(seriesData, seasonLinks, postId);
             const imageUrl = getTVSeriesImageUrl(seriesData);
             const postSetting = await Post.getLatestForAdmin(ctx.from.id);
 
             const channelInfo = postSetting.channelUsername ?
                 `@${postSetting.channelUsername}` :
                 postSetting.channelId;
+            const post = createTVSeriesPost(seriesData, seasonLinks, postId, channelInfo);
 
             const confirmationButtons = Markup.inlineKeyboard([
                 [
@@ -999,8 +1011,12 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
                 } else {
                     updatedSeasonLinks[contextData.buttonIndex] = `${contextData.newButtonName} = ${contextData.newButtonLink}`;
                 }
+                const postSetting = await Post.getLatestForAdmin(ctx.from.id);
 
-                const updatedPost = createTVSeriesPost(tvPost.seriesData, updatedSeasonLinks, contextData.postId);
+                const channelInfo = postSetting.channelUsername ?
+                    `@${postSetting.channelUsername}` :
+                    postSetting.channelId;
+                const updatedPost = createTVSeriesPost(tvPost.seriesData, updatedSeasonLinks, contextData.postId, channelInfo);
 
                 try {
                     if (tvPost.imageUrl) {
