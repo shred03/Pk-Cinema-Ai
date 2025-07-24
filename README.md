@@ -4,27 +4,27 @@ An advanced &amp; powerful Telegram bot that allows storing files from channels 
 
 <h2>🌟 Features</h2>
 
-• <b>Single File Storage</b>: Store individual files from channel posts
-• <b>Batch File Storage</b>: Store multiple files from a range of messages  
-• <b>Custom Captions</b>: Set and manage custom captions for shared files
-• <b>Multiple File Types Support</b>:
-  ◦ Documents 📄
-  ◦ Photos 🖼️
-  ◦ Videos 🎥
-  ◦ Animations (GIFs) 🎭
-  ◦ Stickers 🎯
-• <b>Admin Management</b>: Secure admin-only storage capabilities
-• <b>Logging System</b>: Comprehensive logging of all bot activities
-• <b>User-Friendly Interface</b>: Interactive buttons and clear instructions
+• <b>Single File Storage</b>: Store individual files from channel posts<br>
+• <b>Batch File Storage</b>: Store multiple files from a range of messages<br>  
+• <b>Custom Captions</b>: Set and manage custom captions for shared files<br>
+• <b>Multiple File Types Support</b>:<br>
+  ◦ Documents 📄<br>
+  ◦ Photos 🖼️<br>
+  ◦ Videos 🎥<br>
+  ◦ Animations (GIFs) 🎭<br>
+  ◦ Stickers 🎯<br>
+• <b>Admin Management</b>: Secure admin-only storage capabilities<br>
+• <b>Logging System</b>: Comprehensive logging of all bot activities<br>
+• <b>User-Friendly Interface</b>: Interactive buttons and clear instructions<br>
 
 <h2>📋 Prerequisites</h2>
 
 Before setting up the bot, make sure you have:
 
-• Node.js (v14 or higher)
-• MongoDB database
-• Telegram Bot Token (from <a href="https://t.me/botfather">@BotFather</a>)
-• A Telegram channel where the bot is an admin
+• Node.js (v14 or higher)<br>
+• MongoDB database<br>
+• Telegram Bot Token (from <a href="https://t.me/botfather">@BotFather</a>)<br>
+• A Telegram channel where the bot is an admin<br>
 
 <h2>🚀 Installation</h2>
 
@@ -54,37 +54,10 @@ WATERMARK_CHANNEL=your_channel_username without '@'</pre>
 <b>4.</b> Start the bot:
 <pre>npm run start</pre>
 
-<h2>💡 Usage</h2>
-
-<b>🔧 Admin Commands</b>
-
-• <code>/start</code> – Start the bot
-• <code>/link</code> or <code>/sl</code> – Store a single file from a channel post
-  <pre>/link https://t.me/c/xxxxx/123</pre>
-• <code>/batch</code> or <code>/ml</code> – Store multiple files from a range of messages
-  <pre>/batch https://t.me/c/xxxxx/123 https://t.me/c/xxxxx/128</pre>
-• <code>/post</code> – Create a movie post directly
-  <pre>/post Movie Name https://link</pre>
-• <code>/tvpost</code> – Create a series post directly
-  <pre>/tvpost Series Name https://link</pre>
-• <code>/setchannel</code> or <code>/sc</code> – Set the channel where posts will go
-• <code>/setsticker</code> – Set the default sticker/channel
-• <code>/token</code> – Toggle token verification for file access
-• <code>/filel</code> – Enable or disable file retrieval limit
-• <code>/setl</code> – Set file retrieval limit per user
-  <pre>/setl @username 10</pre>
-• <code>/lstats</code> – View current file limit stats
-• <code>/rsl</code> – Reset file limit for a user or all
-  <pre>/rsl @username  
-/rsl all</pre>
-• <code>/broadcast</code> – Broadcast a message to all users
-• <code>/stats</code> – View bot statistics
-• <code>/help</code> – View available commands
-
 <h2>👥 User Commands</h2>
 
-• <code>/start</code> – Start the bot and view welcome message
-• <code>/start &lt;unique_id&gt;</code> – Retrieve stored files using a unique ID
+• <code>/start</code> – Start the bot and view welcome message<br>
+• <code>/start &lt;unique_id&gt;</code> – Retrieve stored files using a unique ID<br>
 
 <h2>📝 Bot Commands</h2>
 <pre>start - Start bot 
@@ -121,15 +94,15 @@ This project is licensed under the MIT License – see the LICENSE file for deta
 
 If you encounter any issues or have questions, please:
 
-<b>1.</b> Check the existing issues or create a new one
-<b>2.</b> Contact the bot creator through Telegram
-<b>3.</b> Submit a pull request with your proposed changes
+<b>1.</b> Check the existing issues or create a new one<br>
+<b>2.</b> Contact the bot creator through Telegram<br>
+<b>3.</b> Submit a pull request with your proposed changes<br>
 
-<b>🙏 Acknowledgments</b>
+<h2>🙏 Acknowledgments</h2>
 
-• <a href="https://github.com/telegraf/telegraf">Telegraf</a> – Telegram Bot Framework
-• <a href="https://www.mongodb.com/">MongoDB</a> – Database
-• <a href="https://nodejs.org/">Node.js</a> – Runtime Environment
+• <a href="https://github.com/telegraf/telegraf">Telegraf</a> – Telegram Bot Framework<br>
+• <a href="https://www.mongodb.com/">MongoDB</a> – Database<br>
+• <a href="https://nodejs.org/">Node.js</a> – Runtime Environment<br>
 
 ━━━━━━━━━━━━━━━━━━━━
 
