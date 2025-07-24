@@ -2,7 +2,7 @@
 
 An advanced &amp; powerful Telegram bot that allows storing files from channels and generating shareable links for easy file retrieval. Perfect for creating organized file archives and sharing content efficiently.
 
-<b>🌟 Features</b>
+<h2>🌟 Features</h2>
 
 • <b>Single File Storage</b>: Store individual files from channel posts
 • <b>Batch File Storage</b>: Store multiple files from a range of messages  
@@ -17,7 +17,7 @@ An advanced &amp; powerful Telegram bot that allows storing files from channels 
 • <b>Logging System</b>: Comprehensive logging of all bot activities
 • <b>User-Friendly Interface</b>: Interactive buttons and clear instructions
 
-<b>📋 Prerequisites</b>
+<h2>📋 Prerequisites</h2>
 
 Before setting up the bot, make sure you have:
 
@@ -26,7 +26,7 @@ Before setting up the bot, make sure you have:
 • Telegram Bot Token (from <a href="https://t.me/botfather">@BotFather</a>)
 • A Telegram channel where the bot is an admin
 
-<b>🚀 Installation</b>
+<h2>🚀 Installation</h2>
 
 <b>1.</b> Clone the repository:
 <pre>git clone https://github.com/shred03/Pk-Cinema-Ai
@@ -54,7 +54,7 @@ WATERMARK_CHANNEL=your_channel_username without '@'</pre>
 <b>4.</b> Start the bot:
 <pre>npm run start</pre>
 
-<b>💡 Usage</b>
+<h2>💡 Usage</h2>
 
 <b>🔧 Admin Commands</b>
 
@@ -81,12 +81,12 @@ WATERMARK_CHANNEL=your_channel_username without '@'</pre>
 • <code>/stats</code> – View bot statistics
 • <code>/help</code> – View available commands
 
-<b>👥 User Commands</b>
+<h2>👥 User Commands</h2>
 
 • <code>/start</code> – Start the bot and view welcome message
 • <code>/start &lt;unique_id&gt;</code> – Retrieve stored files using a unique ID
 
-<b>📝 Commands Reference</b>
+<h2>📝 Bot Commands</h2>
 <pre>start - Start bot 
 link &lt;message_link&gt; - Store single file
 batch &lt;startMsgLink&gt; &lt;endMsgLink&gt; - Store multiple file
@@ -109,44 +109,11 @@ limitstats - Check retrieval status
 resetlimits - Reset limit all or specific user.
 help - Get Help</pre>
 
-<b>📝 File Storage Process</b>
-
-<b>1.</b> Admin sends a channel post link to the bot
-<b>2.</b> Bot validates the link and admin permissions
-<b>3.</b> Bot generates a unique ID for the file(s)
-<b>4.</b> Files are stored in the database with the unique ID
-<b>5.</b> Bot returns a shareable link for file retrieval
-<b>6.</b> Users can access files using the shareable link
-
-<b>📊 Logging System</b>
-
-The bot includes a comprehensive logging system that tracks:
-
-• Command usage
-• User actions
-• File storage activities
-• Error events
-
-<b>Logs are:</b>
-• Saved to daily log files
-• Sent to a designated Telegram logging channel
-• Formatted for easy reading and monitoring
-
-<b>⚠️ Error Handling</b>
-
-The bot includes robust error handling for:
-
-• Invalid links
-• Unauthorized access attempts
-• File storage failures
-• Database connection issues
-• Message processing errors
-
-<b>🤝 Contributing</b>
+<h2>🤝 Contributing</h2>
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-<b>📜 License</b>
+<h3>📜 License</h3>
 
 This project is licensed under the MIT License – see the LICENSE file for details.
 
