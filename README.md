@@ -1,4 +1,4 @@
-<b>🔥 Advanced Telegram File Store Bot 📁</b>
+<h1>🔥 Advanced Telegram File Store Bot 📁</h1>
 
 An advanced &amp; powerful Telegram bot that allows storing files from channels and generating shareable links for easy file retrieval. Perfect for creating organized file archives and sharing content efficiently.
 
