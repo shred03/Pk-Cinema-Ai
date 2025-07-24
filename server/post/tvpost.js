@@ -1,6 +1,5 @@
 const axios = require('axios');
 const { Markup } = require('telegraf');
-const Logger = require('../logs/Logs');
 const Post = require('../models/Post');
 const config = require('../config');
 const TVPost = require('../models/Series');
@@ -88,7 +87,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 └─────────────────────
 
 <blockquote><b>‣ Join Us: ${currentChannelUsername}</b></blockquote>
-<blockquote><b>‣ Powered By: @TeamXpirates</b></blockquote>
+<blockquote><b>‣ Powered By: @${config.WATERMARK_CHANNEL}</b></blockquote>
 <blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
         // Create buttons from season links
         const buttons = seasonLinks.map((seasonLink, index) => {
