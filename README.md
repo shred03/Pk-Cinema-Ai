@@ -16,6 +16,10 @@ An advanced &amp; powerful Telegram bot that allows storing files from channels 
 • <b>Admin Management</b>: Secure admin-only storage capabilities<br>
 • <b>Logging System</b>: Comprehensive logging of all bot activities<br>
 • <b>User-Friendly Interface</b>: Interactive buttons and clear instructions<br>
+• <b>Search:</b> It has search feature to search direct file from database.<br>
+• <b>Dynamic Button:</b> After sending in destination channel you can update/add button and link.<br>
+• <b>Token and Limit:</b> It has token verification which vaild for 24hr and limit on file retrieval<br>
+• <b>Post:</b> You can create interative post for you channel for both movie/series
 
 <h2>📋 Prerequisites</h2>
 
