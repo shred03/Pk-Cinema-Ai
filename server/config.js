@@ -15,6 +15,8 @@ const config = {
     BOT_USERNAME: process.env.BOT_USERNAME,
     REDIRECT_DOMAIN: process.env.REDIRECT_DOMAIN,
     WATERMARK_CHANNEL: process.env.WATERMARK_CHANNEL,
+    AUTHORIZED_GROUPS: process.env.AUTHORIZED_GROUPS,
+    EXCLUDED_WORDS: process.env.EXCLUDED_WORDS,
 
 }
 

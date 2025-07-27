@@ -1,10 +1,10 @@
 const { Markup } = require('telegraf');
 const File = require('../models/File');
+const config = require('../config');
 
-const EXCLUDE_WORDS = ['[PK]', '[PirecyKings]', '[A14]'
-];
+const EXCLUDE_WORDS = config.EXCLUDED_WORDS.split(', ').map(str => String(str));
+const AUTHORIZED_GROUPS = config.AUTHORIZED_GROUPS.split(',').map(id =>Number(id));
 
-const AUTHORIZED_GROUPS = [-1002102890038,-1002311062019,-1002161034243,-1001798513974,-1001691578341,-1001964585087]
 
 class SearchSystem {
     constructor() {
