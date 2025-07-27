@@ -17,6 +17,7 @@ const config = {
     WATERMARK_CHANNEL: process.env.WATERMARK_CHANNEL,
     AUTHORIZED_GROUPS: process.env.AUTHORIZED_GROUPS,
     EXCLUDED_WORDS: process.env.EXCLUDED_WORDS,
+    REQUEST_CHANNEL_ID: process.env.REQUEST_CHANNEL_ID
 
 }
 
