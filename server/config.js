@@ -14,6 +14,7 @@ const config = {
     SHRINKME_API: process.env.SHRINKME_API,
     BOT_USERNAME: process.env.BOT_USERNAME,
     REDIRECT_DOMAIN: process.env.REDIRECT_DOMAIN,
+    WATERMARK_CHANNEL: process.env.WATERMARK_CHANNEL,
 
 }
 
