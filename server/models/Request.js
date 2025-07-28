@@ -8,7 +8,7 @@ const requestSchema = new mongoose.Schema({
     request_originId: String,  //chatId from request was made 
     request_forwardId: String,
     isRequestCompleted: Boolean,
-    requestApprovedBy: Number  //admin id
+    requestAcceptedBy: Number  //admin id
 
 })
 

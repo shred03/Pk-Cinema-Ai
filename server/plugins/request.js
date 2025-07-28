@@ -44,7 +44,7 @@ const setupRequestSystem = (bot, logger, ADMIN_IDS) => {
                 request_originId: ctx.chat.id.toString(),
                 request_forwardId: REQUEST_CHANNEL_ID,
                 isRequestCompleted: false,
-                requestApprovedBy: null
+                requestAcceptedBy: null
             });
 
             await newRequest.save();
@@ -58,7 +58,7 @@ const setupRequestSystem = (bot, logger, ADMIN_IDS) => {
 
             const keyboard = Markup.inlineKeyboard([
                 [
-                    Markup.button.callback('✅ Approve', `req_approved_${requestId}`),
+                    Markup.button.callback('✅ Accept', `req_accepted_${requestId}`),
                     Markup.button.callback('❌ Decline', `req_decline_${requestId}`)
                 ]
             ]);
@@ -94,7 +94,7 @@ const setupRequestSystem = (bot, logger, ADMIN_IDS) => {
         }
     });
 
-    bot.action(/^req_approved_(.+)/, async (ctx) => {
+    bot.action(/^req_accepted_(.+)/, async (ctx) => {
         try {
             if (!ADMIN_IDS.includes(ctx.from.id)) {
                 return ctx.answerCbQuery('❌ Only admins can use this button');
@@ -115,38 +115,38 @@ const setupRequestSystem = (bot, logger, ADMIN_IDS) => {
                 { request_id: requestId },
                 {
                     isRequestCompleted: true,
-                    requestApprovedBy: ctx.from.id
+                    requestAcceptedBy: ctx.from.id
                 }
             );
 
             try {
                 await ctx.telegram.sendMessage(
                     request.user_id,
-                    `✅ <b>Request Approved!</b>\n\n` +
-                    `📋 <b>Your Request:</b> ${request.request_content}\n` +
+                    `✅ <b>Request Accepted!</b>\n\n` +
+                    `📋 <b>Your Request:</b> <code>${request.request_content}</code>\n` +
                     `🔢 <b>RID:</b> <code>${requestId}</code>\n\n` +
-                    `Your requested has been approved, file will approved shortly. Thank You!`,
+                    `<b>Your requested has been accepted, file will be uploaded in our channel soon. Thank You!</b>`,
                     { parse_mode: 'HTML' }
                 );
             } catch (error) {
-                console.error('Error sending approved message to user:', error);
+                console.error('Error sending accepted message to user:', error);
             }
 
-            const updatedMessage = ctx.callbackQuery.message.text + `\n\n✅ <b>APPROVED</b> by ${ctx.from.first_name} (@${ctx.from.username || 'admin'})`;
+            const updatedMessage = ctx.callbackQuery.message.text + `\n\n✅ <b>ACCEPTED</b> by ${ctx.from.first_name} (@${ctx.from.username || 'admin'})`;
             
             await ctx.editMessageText(updatedMessage, { parse_mode: 'HTML' });
-            await ctx.answerCbQuery('✅ Request marked as approved and user notified');
+            await ctx.answerCbQuery('✅ Request marked as accepted and user notified');
 
             await logger.command(
                 ctx.from.id,
                 `${ctx.from.first_name} (@${ctx.from.username || 'admin'})`,
-                'Request approved',
+                'Request accepted',
                 'SUCCESS',
                 `RID: ${requestId} | User: ${request.user_id}`
             );
 
         } catch (error) {
-            console.error('Error handling approved request:', error);
+            console.error('Error handling accepted request:', error);
             await ctx.answerCbQuery('❌ Error processing request');
         }
     });
@@ -172,7 +172,7 @@ const setupRequestSystem = (bot, logger, ADMIN_IDS) => {
                 { request_id: requestId },
                 {
                     isRequestCompleted: true,
-                    requestApprovedBy: ctx.from.id
+                    requestAcceptedBy: ctx.from.id
                 }
             );
 
@@ -180,9 +180,9 @@ const setupRequestSystem = (bot, logger, ADMIN_IDS) => {
                 await ctx.telegram.sendMessage(
                     request.user_id,
                     `❌ <b>Request Declined</b>\n\n` +
-                    `📋 <b>Your Request:</b> ${request.request_content}\n` +
+                    `📋 <b>Your Request:</b> <code>${request.request_content}</code>\n` +
                     `🔢 <b>RID:</b> <code>${requestId}</code>\n\n` +
-                    `Your request has been declined by admin. Please try again with correct format use <code>/format</code>.`,
+                    `<i>Your request has been declined by admin. Please try again with correct format use <code>/format</code>.</i>`,
                     { parse_mode: 'HTML' }
                 );
             } catch (error) {
