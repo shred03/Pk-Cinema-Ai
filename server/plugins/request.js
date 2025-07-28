@@ -208,7 +208,7 @@ const setupRequestSystem = (bot, logger, ADMIN_IDS) => {
         }
     });
 
-    bot.command(['foramt'], async (ctx) =>{
+    bot.command(['format'], async (ctx) =>{
         try{
             await ctx.reply("#request {movie/series/anime-name} {release-year} {quality}\n\n E.g: <code>#request Kalki 2898AD 2024 1080p</code>", {parse_mode: "HTML"});
         }catch(error){
