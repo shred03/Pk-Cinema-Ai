@@ -25,6 +25,7 @@ const setupVerificationRoutes = require('./plugins/verificationRoutes');
 const {handleMenuAction, setInitialMenuState } = require("./helper/menuHandler");
 const fileRetrievalLimitSystem = require('./plugins/fileRetrievalLimit');
 const setupSearch = require('./plugins/search');
+const setupRequestSystem = require('./plugins/request');
 
 
 const DATABASE_NAME = process.env.DATABASE_NAME
@@ -51,6 +52,7 @@ app.use(express.json());
 setupRoutes(app);
 setupVerificationRoutes(app);
 setupSearch(bot, logger);
+setupRequestSystem(bot, logger, ADMIN_IDS);
 
 const isAdmin = async (ctx, next) => {
     if (!ADMIN_IDS.includes(ctx.from.id)) {
