@@ -1008,7 +1008,7 @@ bot.action(/^mclose_(.+)$/, async (ctx) => {
             const postConfimationMsg = '✅ Post sent to channel!'
             await ctx.answerCbQuery(postConfimationMsg);
             const detailedMsg = `✅ Post for "${postData.movieData.title}" has been sent to ${postData.channelInfo} successfully!\n\n🔗 Use \`/maddlink ${postId}\` to add links to buttons.\n🔗 Use \`/mupdatebtn ${postId}\` to add-update-change links-name of buttons.`
-            await ctx.editMessageText(detailedMsg);
+            await ctx.editMessageText(detailedMsg, {parse_mode: 'Markdown'});
 
             await logger.command(
                 ctx.from.id,
