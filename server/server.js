@@ -203,13 +203,13 @@ bot.command(['link', 'sl'], isAdmin, async (ctx) => {
         if (stored) {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             const universelUrl = `https://${config.REDIRECT_DOMAIN}/${uniqueId}`
-            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code> \n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, { parse_mode: 'HTML' });
-            shrinkme(universelUrl).then(shortUrl => {
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\nOriginal URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, { parse_mode: 'HTML' });
+            shrinkme(retrievalLink).then(shortUrl => {
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,
                     null,
-                    `✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
+                    `✅ File stored successfully!\nOriginal URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
                     { parse_mode: 'HTML' }
                 ).catch(err => console.error('Failed to update message with short URL:', err));
             });
@@ -315,13 +315,13 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
             const universelUrl = `https://${config.REDIRECT_DOMAIN}/${uniqueId}`
 
-            const initialMessage = await ctx.reply(`✅ File stored successfully!\nUniversel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, { parse_mode: 'HTML' });
-            shrinkme(universelUrl).then(shortUrl => {
+            const initialMessage = await ctx.reply(`✅ File stored successfully!\nOriginal URL: <code>${retrievalLink}</code>\n⌛ Generating short URL...`, { parse_mode: 'HTML' });
+            shrinkme(retrievalLink).then(shortUrl => {
                 ctx.telegram.editMessageText(
                     ctx.chat.id,
                     initialMessage.message_id,
                     null,
-                    `✅ File stored successfully!\n🔗 Universel URL: <code>${universelUrl}</code>\n\n🔗 Original URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
+                    `✅ File stored successfully!\nOriginal URL: <code>${retrievalLink}</code>\n🔗 Shorten URL: <code>${shortUrl || "Failed to generate"}</code>`,
                     { parse_mode: 'HTML' }
                 ).catch(err => console.error('Failed to update message with short URL:'));
             });

@@ -135,7 +135,7 @@ class SearchSystem {
             const buttonText = `${fileTypeIcon} ${displayName}`;
 
             keyboard.push([
-                Markup.button.url(buttonText, `https://pirecykings.netlify.app/${file.unique_id}`)
+                Markup.button.url(buttonText, `https://t.me/${config.BOT_USERNAME}?start=${file.unique_id}`)
             ]);
         });
 
