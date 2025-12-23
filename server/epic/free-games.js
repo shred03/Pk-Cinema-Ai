@@ -65,13 +65,16 @@ class EpicGamesService {
         const [days, hours, minutes] = timeRemaining.match(/\d+/g);
         const formattedTime = `${days} Day ${hours} Hour ${minutes} Minute`;
 
-        const expiryDate = new Date(game.expiryDate).toLocaleDateString('en-US', {
+        const expiryDate = new Date(game.expiryDate).toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
             month: 'long',
             day: 'numeric',
             year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            hour12: true
         });
+
 
         return `
 <b>${game.title}</b>
