@@ -22,10 +22,11 @@ const { getFileDataFromMessage } = require('./helper/getFileDataMessage');
 const setupRoutes = require('./plugins/setupRoutes');
 const verificationSystem = require('./plugins/verification');
 const setupVerificationRoutes = require('./plugins/verificationRoutes');
-const {handleMenuAction, setInitialMenuState } = require("./helper/menuHandler");
+const { handleMenuAction, setInitialMenuState } = require("./helper/menuHandler");
 const fileRetrievalLimitSystem = require('./plugins/fileRetrievalLimit');
 const setupSearch = require('./plugins/search');
 const setupRequestSystem = require('./plugins/request');
+const EpicGamesService = require('./epic/free-games');
 
 
 const DATABASE_NAME = process.env.DATABASE_NAME
@@ -53,14 +54,13 @@ setupRoutes(app);
 setupVerificationRoutes(app);
 setupSearch(bot, logger);
 setupRequestSystem(bot, logger, ADMIN_IDS);
-
 const isAdmin = async (ctx, next) => {
     if (!ADMIN_IDS.includes(ctx.from.id)) {
         return ctx.reply('❌ 𝙊𝙣𝙡𝙮 𝙖𝙙𝙢𝙞𝙣𝙨 𝙘𝙖𝙣 𝙪𝙨𝙚 𝙩𝙝𝙞𝙨 𝙘𝙤𝙢𝙢𝙖𝙣𝙙');
     }
     return next();
 };
-
+const epicGamesService = new EpicGamesService(bot);
 const generateUniqueId = () => crypto.randomBytes(8).toString('hex');
 
 const resolveChannelId = async (ctx, identifier) => {
@@ -309,7 +309,7 @@ bot.command(['batch', 'ml'], isAdmin, async (ctx) => {
         }
 
         if (files.length > 0) {
-            
+
             await File.insertMany(files);
 
             const retrievalLink = `https://t.me/${ctx.botInfo.username}?start=${uniqueId}`;
@@ -379,8 +379,8 @@ bot.command(['filelimit', 'filel'], isAdmin, async (ctx) => {
 
         await ctx.reply(`📊 **File Retrieval Limit System ${statusText}**\n\n` +
             `Status: System is now **${statusText.toLowerCase()}**\n\n` +
-            `${status ? 
-                `• Users limited to ${fileRetrievalLimitSystem.getFileLimit()} files per cycle\n• Verification required after limit reached\n• Limits reset every 24 hours` : 
+            `${status ?
+                `• Users limited to ${fileRetrievalLimitSystem.getFileLimit()} files per cycle\n• Verification required after limit reached\n• Limits reset every 24 hours` :
                 '• Users can retrieve unlimited files\n• No file count tracking'
             }`,
             { parse_mode: 'Markdown' }
@@ -447,7 +447,7 @@ bot.command(['limitstats', 'lstats'], isAdmin, async (ctx) => {
         }
 
         const statusText = stats.systemEnabled ? 'ENABLED ✅' : 'DISABLED ❌';
-        
+
         await ctx.reply(
             `📊 **File Retrieval Limit Statistics**\n\n` +
             `🔧 **System Status:** ${statusText}\n` +
@@ -477,7 +477,7 @@ bot.command(['resetlimits', 'rsl'], isAdmin, async (ctx) => {
         const userId = args[0] ? parseInt(args[0]) : null;
 
         const result = await fileRetrievalLimitSystem.resetUserLimits(userId);
-        
+
         if (result.success) {
             await ctx.reply(`✅ ${result.message}`, { parse_mode: 'Markdown' });
             await logger.command(
@@ -500,8 +500,8 @@ bot.command(['resetlimits', 'rsl'], isAdmin, async (ctx) => {
         );
         await ctx.reply('❌ Error resetting user limits.');
     }
+    require('./helper/help')(bot);
 });
-require('./helper/help')(bot);
 
 bot.command('start', async (ctx) => {
     try {
@@ -517,22 +517,22 @@ bot.command('start', async (ctx) => {
         );
 
         const uniqueId = ctx.message.text.split(' ')[1];
-    
+
         if (uniqueId && uniqueId.startsWith('verify_')) {
             const token = uniqueId.replace('verify_', '');
             const result = await verificationSystem.verifyUserByToken(token);
 
-            if (result.success) {               
-                if (result.context === 'limit_exceeded') {                    
+            if (result.success) {
+                if (result.context === 'limit_exceeded') {
                     // UPDATED: Pass the context to handleVerificationSuccess
                     await fileRetrievalLimitSystem.handleVerificationSuccess(result.userId, 'limit_exceeded');
-                    
+
                     await ctx.reply(`✅ **Verification Successful!**\n\n` +
                         `Your file retrieval limit has been reset. You can now access files again.\n\n` +
                         `${result.uniqueId ? `Use this link to get your files: /start ${result.uniqueId}` : 'You can now access files normally.'}`,
                         { parse_mode: 'Markdown' }
-                    );                    
-                   
+                    );
+
                     if (result.uniqueId) {
                         setTimeout(async () => {
                             await ctx.telegram.sendMessage(ctx.chat.id, `/start ${result.uniqueId}`);
@@ -541,7 +541,7 @@ bot.command('start', async (ctx) => {
                 } else {
                     // UPDATED: Pass the context to handleVerificationSuccess  
                     await fileRetrievalLimitSystem.handleVerificationSuccess(result.userId, 'general');
-                    
+
                     await ctx.reply(`✅ **Verification Successful!**\n\n` +
                         `${result.message}\n\n` +
                         `You can now access files by using the original file link.`,
@@ -564,7 +564,7 @@ bot.command('start', async (ctx) => {
             if (!files.length) return ctx.reply('Files not found.');
 
             if (!ADMIN_IDS.includes(ctx.from.id)) {
-            
+
                 const isMember = await checkChannelMembership(ctx, ctx.from.id);
                 if (!isMember) {
                     const channelButtons = FORCE_CHANNELS.map(channel =>
@@ -580,10 +580,10 @@ bot.command('start', async (ctx) => {
                     await ctx.reply('😊 To access the files, please join of our channels:', joinKeyboard);
                     return;
                 }
-               
+
                 if (fileRetrievalLimitSystem.isSystemEnabled()) {
                     const limitCheck = await fileRetrievalLimitSystem.checkRetrievalLimit(ctx.from.id);
-                    
+
                     if (!limitCheck.allowed && limitCheck.needsVerification) {
                         await fileRetrievalLimitSystem.handleLimitExceeded(ctx, uniqueId, limitCheck);
                         return;
@@ -611,7 +611,7 @@ bot.command('start', async (ctx) => {
 
             let sendingMsg = await ctx.reply(`⌛️ Sending ${files.length} file(s)...`);
             const sentMessages = [];
-            
+
             for (const file of files) {
                 try {
                     const sentMessage = await sendFile(ctx, file);
@@ -629,7 +629,7 @@ bot.command('start', async (ctx) => {
                 const warningMsg = await ctx.reply(`⚠️ Warning! These files will be automatically deleted in ${DELETE_MINUTES} minutes. Forward them now to keep copies!`);
                 sentMessages.push(warningMsg.message_id);
             }
-            
+
             if (!ADMIN_IDS.includes(ctx.from.id) && fileRetrievalLimitSystem.isSystemEnabled()) {
                 await fileRetrievalLimitSystem.updateFileRetrievalCount(ctx.from.id, files.length);
                 const userStats = await fileRetrievalLimitSystem.getUserStats(ctx.from.id);
@@ -678,21 +678,136 @@ bot.command('start', async (ctx) => {
     }
 });
 
-bot.action(/^check_join_(.+)/, async (ctx) => {
-    const uniqueId = ctx.match[1];
+bot.command('active', async (ctx) => {
     try {
-        const isMember = await checkChannelMembership(ctx, ctx.from.id);
-        if (!isMember) {
-            await ctx.answerCbQuery('😒 You haven\'t joined the channels yet!');
+        const chatType = ctx.chat.type;
+
+        // Check if command is used in a group or channel
+        if (chatType === 'private') {
+            return ctx.reply('❌ This command can only be used in groups or channels.\n\nAdd me to a group/channel and use /active there to enable Epic Games notifications!');
+        }
+
+        // Check if bot has permission to send messages
+        try {
+            const chatMember = await ctx.telegram.getChatMember(ctx.chat.id, ctx.botInfo.id);
+            if (!['administrator', 'creator'].includes(chatMember.status)) {
+                return ctx.reply('❌ Please make me an admin first to send notifications!');
+            }
+        } catch (error) {
+            console.error('Error checking bot permissions:', error);
+        }
+
+        // Check if already activated
+        if (epicGamesService.isActivated(ctx.chat.id)) {
+            return ctx.reply('✅ Epic Games notifications are already active in this chat!\n\nUse /deactive to turn them off.');
+        }
+
+        // Activate and send current game
+        const result = await epicGamesService.activateChat(ctx.chat.id);
+
+        if (result.success) {
+            await ctx.reply(result.message);
+            await logger.command(
+                ctx.from.id,
+                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})`,
+                'Active command used',
+                'SUCCESS',
+                `Activated Epic Games notifications for chat ${ctx.chat.id} (${ctx.chat.title || 'Unknown'})`
+            );
         } else {
-            await ctx.deleteMessage();
-            await ctx.reply(`😍 Thank you for joining! Now send below message to retrieve your files...`);
-            
-            await ctx.telegram.sendMessage(ctx.chat.id, `/start ${uniqueId}`);
+            await ctx.reply(result.message);
         }
     } catch (error) {
-        console.error('Error verifying membership:');
-        await ctx.answerCbQuery('Error verifying channel membership.');
+        console.error('Error in /active command:', error);
+        await logger.error(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})`,
+            'Active command used',
+            'FAILED',
+            error.message
+        );
+        await ctx.reply('❌ An error occurred. Please try again later.');
+    }
+});
+
+// Deactivate Epic Games notifications
+bot.command('deactive', async (ctx) => {
+    try {
+        const chatType = ctx.chat.type;
+
+        if (chatType === 'private') {
+            return ctx.reply('❌ This command can only be used in groups or channels.');
+        }
+
+        if (!epicGamesService.isActivated(ctx.chat.id)) {
+            return ctx.reply('❌ Epic Games notifications are not active in this chat.\n\nUse /active to enable them.');
+        }
+
+        const result = epicGamesService.deactivateChat(ctx.chat.id);
+        await ctx.reply(result.message);
+
+        await logger.command(
+            ctx.from.id,
+            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})`,
+            'Deactive command used',
+            'SUCCESS',
+            `Deactivated Epic Games notifications for chat ${ctx.chat.id} (${ctx.chat.title || 'Unknown'})`
+        );
+    } catch (error) {
+        console.error('Error in /deactive command:', error);
+        await ctx.reply('❌ An error occurred. Please try again later.');
+    }
+});
+
+// Admin command to check Epic Games service stats
+bot.command('epicstats', isAdmin, async (ctx) => {
+    try {
+        const stats = await epicGamesService.getStats();
+        const currentGame = await epicGamesService.fetchCurrentGame();
+
+        let message = `📊 <b>Epic Games Service Statistics</b>\n\n`;
+        message += `✅ Status: ${stats.isInitialized ? 'Initialized' : 'Not Initialized'}\n`;
+        message += `👥 Active Chats: ${stats.activeChats}\n`;
+        message += `🟢 Total Active: ${stats.activeChatIds.length}\n`;
+        message += `🔴 Total Deactivated: ${stats.deactiveChatIds.length}\n\n`;
+        // message += `🎮 Last Posted Game: ${stats.lastPostedGame}\n\n`;
+
+        if (currentGame) {
+            message += `🎮 <b>Current Free Game:</b>\n`;
+            message += `${currentGame.title}\n`;
+            message += `⏰ ${currentGame.timeRemaining?.humanReadable || 'Unknown'} remaining\n`;
+        } else {
+            message += `❌ Could not fetch current game data\n`;
+        }
+
+        await ctx.reply(message, { parse_mode: 'HTML' });
+    } catch (error) {
+        console.error('Error in /epicstats command:', error);
+        await ctx.reply('❌ Failed to fetch statistics.');
+    }
+});
+
+// Admin command to manually trigger game check
+bot.command('checkgames', isAdmin, async (ctx) => {
+    try {
+        await ctx.reply('🔍 Checking for new games...');
+        await epicGamesService.checkAndNotifyNewGames();
+        await ctx.reply('✅ Check completed!');
+    } catch (error) {
+        console.error('Error in /checkgames command:', error);
+        await ctx.reply('❌ Failed to check for new games.');
+    }
+});
+
+// Admin command to sync active chats from database (useful after manual DB changes)
+bot.command('syncchat', isAdmin, async (ctx) => {
+    try {
+        await epicGamesService.syncFromDatabase();
+        const stats = await epicGamesService.getStats();
+        await ctx.reply(`✅ Synced ${stats.activeChats} active chats from database!`);
+    } catch (error) {
+        console.error('Error in /syncchat command:', error);
+        await ctx.reply('❌ Failed to sync chats.');
     }
 });
 
@@ -700,7 +815,7 @@ bot.action(/^verify_check_(.+)/, async (ctx) => {
     const uniqueId = ctx.match[1];
     try {
         const isVerified = await verificationSystem.isUserVerified(ctx.from.id);
-        
+
         if (!isVerified) {
             await ctx.answerCbQuery('❌ Please complete verification first by clicking the verification link.');
             return;
@@ -708,7 +823,7 @@ bot.action(/^verify_check_(.+)/, async (ctx) => {
 
         await ctx.answerCbQuery('✅ Verification confirmed!');
         await ctx.deleteMessage();
-        
+
         await ctx.telegram.sendMessage(ctx.chat.id, `/start ${uniqueId}`);
     } catch (error) {
         console.error('Error handling verification check:', error);
@@ -741,7 +856,7 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 startBot();
-
+epicGamesService.startCronJob();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
