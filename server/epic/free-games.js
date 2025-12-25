@@ -239,7 +239,7 @@ class EpicGamesService {
 
     startCronJob() {
         // Check every 2 hours for new games
-        cron.schedule('0 */2 * * *', async () => {
+        cron.schedule('* * * * *', async () => {
             console.log('🔍 Checking for new Epic Games free games...');
             await this.checkAndNotifyNewGames();
         });
