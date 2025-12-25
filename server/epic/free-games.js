@@ -90,6 +90,42 @@ class EpicGamesService {
 #FreeGame #EpicGames ~ <a href="https://t.me/chihirr0">@chihiro</a>`;
     }
 
+    async sendGameNotification(chatId, game) {
+        const imageUrl = game.images.landscape || game.images.portrait;
+
+        try {
+            // Try sending as photo with URL
+            await this.bot.telegram.sendPhoto(
+                chatId,
+                { url: imageUrl },
+                {
+                    caption: this.formatGameMessage(game),
+                    parse_mode: 'HTML'
+                }
+            );
+            return true;
+        } catch (error) {
+            console.error(`Error sending photo for ${game.title}:`, error.message);
+
+            // Fallback: Send as message with clickable image link
+            try {
+                const messageWithLink = `🎮 <b>${game.title}</b>\n\n` +
+                    `<a href="${imageUrl}">📸 View Game Image</a>\n\n` +
+                    this.formatGameMessage(game);
+
+                await this.bot.telegram.sendMessage(
+                    chatId,
+                    messageWithLink,
+                    { parse_mode: 'HTML', disable_web_page_preview: false }
+                );
+                return true;
+            } catch (fallbackError) {
+                console.error('Fallback message also failed:', fallbackError.message);
+                return false;
+            }
+        }
+    }
+
     async activateChat(chatId) {
         await this.initialize();
 
@@ -116,22 +152,15 @@ class EpicGamesService {
         // Send current free game immediately
         const currentGame = await this.fetchCurrentGame();
         if (currentGame) {
-            try {
-                await this.bot.telegram.sendPhoto(
-                    chatId,
-                    currentGame.images.landscape || currentGame.images.portrait,
-                    {
-                        caption: this.formatGameMessage(currentGame),
-                        parse_mode: 'HTML'
-                    }
-                );
+            const sent = await this.sendGameNotification(chatId, currentGame);
+
+            if (sent) {
                 return {
                     success: true,
                     message: '✅ Epic Games notifications activated! You\'ll receive updates when new free games are available.',
                     game: currentGame
                 };
-            } catch (error) {
-                console.error('Error sending game message:', error);
+            } else {
                 return {
                     success: false,
                     message: '❌ Failed to send game information. Please try again.'
@@ -208,15 +237,10 @@ class EpicGamesService {
                 // Notify all active chats
                 const notificationPromises = Array.from(this.activeChats.keys()).map(async (chatId) => {
                     try {
-                        await this.bot.telegram.sendPhoto(
-                            chatId,
-                            currentGame.images.landscape || currentGame.images.portrait,
-                            {
-                                caption: this.formatGameMessage(currentGame),
-                                parse_mode: 'HTML'
-                            }
-                        );
-                        console.log(`✅ Sent notification to chat ${chatId}`);
+                        const sent = await this.sendGameNotification(chatId, currentGame);
+                        if (sent) {
+                            console.log(`✅ Sent notification to chat ${chatId}`);
+                        }
                     } catch (error) {
                         console.error(`❌ Failed to send to chat ${chatId}:`, error.message);
                         // If chat is inaccessible, deactivate it
