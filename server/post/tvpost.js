@@ -91,7 +91,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 <blockquote>[𝗜𝗳 𝗬𝗼𝘂 𝗦𝗵𝗮𝗿𝗲 𝗢𝘂𝗿 𝗙𝗶𝗹𝗲𝘀 𝗪𝗶𝘁𝗵𝗼𝘂𝘁 𝗖𝗿𝗲𝗱𝗶𝘁, 𝗧𝗵𝗲𝗻 𝗬𝗼𝘂 𝗪𝗶𝗹𝗹 𝗯𝗲 𝗕𝗮𝗻𝗻𝗲𝗱]</blockquote>`;
         // Create buttons from season links
         const buttons = seasonLinks.map((seasonLink, index) => {
-            const [buttonText, link] = seasonLink.trim().split('=').map(item => item.trim());
+            const [buttonText, link] = seasonLink.trim().split('-').map(item => item.trim());
 
             if (!link || link === '' || link === 'placeholder') {
                 return Markup.button.callback(
@@ -298,10 +298,10 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
                     return ctx.reply(`Invalid format for '${linkData}'. Please use 'Season X = link' format.`);
                 }
 
-                const [seasonText, newLink] = linkData.split('=').map(item => item.trim());
+                const [seasonText, newLink] = linkData.split('-').map(item => item.trim());
 
                 const seasonIndex = tvPost.seasonLinks.findIndex(originalLink => {
-                    const [originalSeasonText] = originalLink.split('=').map(item => item.trim());
+                    const [originalSeasonText] = originalLink.split('-').map(item => item.trim());
                     return originalSeasonText.toLowerCase() === seasonText.toLowerCase();
                 });
 
@@ -314,7 +314,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 
             const updatedSeasonLinks = [...tvPost.seasonLinks];
             for (const [index, newLink] of Object.entries(linkUpdates)) {
-                const [seasonText] = updatedSeasonLinks[index].split('=').map(item => item.trim());
+                const [seasonText] = updatedSeasonLinks[index].split('-').map(item => item.trim());
                 updatedSeasonLinks[index] = `${seasonText} = ${newLink}`;
             }
 
@@ -473,7 +473,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
             const buttons = [];
 
             tvPost.seasonLinks.forEach((seasonLink, index) => {
-                const [buttonText] = seasonLink.trim().split('=').map(item => item.trim());
+                const [buttonText] = seasonLink.trim().split('-').map(item => item.trim());
                 buttons.push([Markup.button.callback(`📝 ${buttonText}`, `editbtn_${postId}_${index}`)]);
             });
 
@@ -520,7 +520,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
                 return ctx.answerCbQuery('❌ Post not found');
             }
 
-            const [currentButtonText, currentLink] = tvPost.seasonLinks[buttonIndex].split('=').map(item => item.trim());
+            const [currentButtonText, currentLink] = tvPost.seasonLinks[buttonIndex].split('-').map(item => item.trim());
 
             const contextId = `editbtn_${postId}_${buttonIndex}_${Date.now()}`;
             bot.context.buttonEditContext = bot.context.buttonEditContext || {};
@@ -623,7 +623,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 
                 const buttons = [];
                 tvpost.seasonLinks.forEach((seasonLink, index) => {
-                    const [buttonText] = seasonLink.trim().split('=').map(item => item.trim());
+                    const [buttonText] = seasonLink.trim().split('-').map(item => item.trim());
                     buttons.push([Markup.button.callback(`📝 ${buttonText}`, `editbtn_${postId}_${index}`)]);
                 });
 
@@ -659,7 +659,7 @@ const setupTVPostCommand = (bot, logger, ADMIN_IDS) => {
 
             const buttons = [];
             tvpost.seasonLinks.forEach((seasonLink, index) => {
-                const [buttonText] = seasonLink.trim().split('=').map(item => item.trim());
+                const [buttonText] = seasonLink.trim().split('-').map(item => item.trim());
                 buttons.push([Markup.button.callback(`📝 ${buttonText}`, `editbtn_${postId}_${index}`)]);
             });
 
