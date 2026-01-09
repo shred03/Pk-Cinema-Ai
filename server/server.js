@@ -26,7 +26,6 @@ const { handleMenuAction, setInitialMenuState } = require("./helper/menuHandler"
 const fileRetrievalLimitSystem = require('./plugins/fileRetrievalLimit');
 const setupSearch = require('./plugins/search');
 const setupRequestSystem = require('./plugins/request');
-const EpicGamesService = require('./epic/free-games');
 
 
 const DATABASE_NAME = process.env.DATABASE_NAME
@@ -60,7 +59,6 @@ const isAdmin = async (ctx, next) => {
     }
     return next();
 };
-const epicGamesService = new EpicGamesService(bot);
 const generateUniqueId = () => crypto.randomBytes(8).toString('hex');
 
 const resolveChannelId = async (ctx, identifier) => {
@@ -677,140 +675,6 @@ bot.command('start', async (ctx) => {
         await ctx.reply('Error starting bot. Please try again.');
     }
 });
-
-bot.command('active', async (ctx) => {
-    try {
-        const chatType = ctx.chat.type;
-
-        // Check if command is used in a group or channel
-        if (chatType === 'private') {
-            return ctx.reply('❌ This command can only be used in groups or channels.\n\nAdd me to a group/channel and use /active there to enable Epic Games notifications!');
-        }
-
-        // Check if bot has permission to send messages
-        try {
-            const chatMember = await ctx.telegram.getChatMember(ctx.chat.id, ctx.botInfo.id);
-            if (!['administrator', 'creator'].includes(chatMember.status)) {
-                return ctx.reply('❌ Please make me an admin first to send notifications!');
-            }
-        } catch (error) {
-            console.error('Error checking bot permissions:', error);
-        }
-
-        // Check if already activated
-        if (epicGamesService.isActivated(ctx.chat.id)) {
-            return ctx.reply('✅ Epic Games notifications are already active in this chat!\n\nUse /deactive to turn them off.');
-        }
-
-        // Activate and send current game
-        const result = await epicGamesService.activateChat(ctx.chat.id);
-
-        if (result.success) {
-            await ctx.reply(result.message);
-            await logger.command(
-                ctx.from.id,
-                `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})`,
-                'Active command used',
-                'SUCCESS',
-                `Activated Epic Games notifications for chat ${ctx.chat.id} (${ctx.chat.title || 'Unknown'})`
-            );
-        } else {
-            await ctx.reply(result.message);
-        }
-    } catch (error) {
-        console.error('Error in /active command:', error);
-        await logger.error(
-            ctx.from.id,
-            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})`,
-            'Active command used',
-            'FAILED',
-            error.message
-        );
-        await ctx.reply('❌ An error occurred. Please try again later.');
-    }
-});
-
-// Deactivate Epic Games notifications
-bot.command('deactive', async (ctx) => {
-    try {
-        const chatType = ctx.chat.type;
-
-        if (chatType === 'private') {
-            return ctx.reply('❌ This command can only be used in groups or channels.');
-        }
-
-        if (!epicGamesService.isActivated(ctx.chat.id)) {
-            return ctx.reply('❌ Epic Games notifications are not active in this chat.\n\nUse /active to enable them.');
-        }
-
-        const result = epicGamesService.deactivateChat(ctx.chat.id);
-        await ctx.reply(result.message);
-
-        await logger.command(
-            ctx.from.id,
-            `${ctx.from.first_name} (${ctx.from.username || 'Untitled'})`,
-            'Deactive command used',
-            'SUCCESS',
-            `Deactivated Epic Games notifications for chat ${ctx.chat.id} (${ctx.chat.title || 'Unknown'})`
-        );
-    } catch (error) {
-        console.error('Error in /deactive command:', error);
-        await ctx.reply('❌ An error occurred. Please try again later.');
-    }
-});
-
-// Admin command to check Epic Games service stats
-bot.command('epicstats', isAdmin, async (ctx) => {
-    try {
-        const stats = await epicGamesService.getStats();
-        const currentGame = await epicGamesService.fetchCurrentGame();
-
-        let message = `📊 <b>Epic Games Service Statistics</b>\n\n`;
-        message += `✅ Status: ${stats.isInitialized ? 'Initialized' : 'Not Initialized'}\n`;
-        message += `👥 Active Chats: ${stats.activeChats}\n`;
-        message += `🟢 Total Active: ${stats.activeChatIds.length}\n`;
-        message += `🔴 Total Deactivated: ${stats.deactiveChatIds.length}\n\n`;
-        // message += `🎮 Last Posted Game: ${stats.lastPostedGame}\n\n`;
-
-        if (currentGame) {
-            message += `🎮 <b>Current Free Game:</b>\n`;
-            message += `${currentGame.title}\n`;
-            message += `⏰ ${currentGame.timeRemaining?.humanReadable || 'Unknown'} remaining\n`;
-        } else {
-            message += `❌ Could not fetch current game data\n`;
-        }
-
-        await ctx.reply(message, { parse_mode: 'HTML' });
-    } catch (error) {
-        console.error('Error in /epicstats command:', error);
-        await ctx.reply('❌ Failed to fetch statistics.');
-    }
-});
-
-// Admin command to manually trigger game check
-bot.command('checkgames', isAdmin, async (ctx) => {
-    try {
-        await ctx.reply('🔍 Checking for new games...');
-        await epicGamesService.checkAndNotifyNewGames();
-        await ctx.reply('✅ Check completed!');
-    } catch (error) {
-        console.error('Error in /checkgames command:', error);
-        await ctx.reply('❌ Failed to check for new games.');
-    }
-});
-
-// Admin command to sync active chats from database (useful after manual DB changes)
-bot.command('syncchat', isAdmin, async (ctx) => {
-    try {
-        await epicGamesService.syncFromDatabase();
-        const stats = await epicGamesService.getStats();
-        await ctx.reply(`✅ Synced ${stats.activeChats} active chats from database!`);
-    } catch (error) {
-        console.error('Error in /syncchat command:', error);
-        await ctx.reply('❌ Failed to sync chats.');
-    }
-});
-
 bot.action(/^verify_check_(.+)/, async (ctx) => {
     const uniqueId = ctx.match[1];
     try {
@@ -856,7 +720,6 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 startBot();
-epicGamesService.startCronJob();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
